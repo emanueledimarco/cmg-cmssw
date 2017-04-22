@@ -19,11 +19,11 @@ from CMGTools.TTHAnalysis.plotter.mcCorrections import *
 from CMGTools.TTHAnalysis.plotter.fakeRate import *
 
 if "/functions_cc.so" not in ROOT.gSystem.GetLibraries(): 
-    ROOT.gROOT.ProcessLine(".L %s/src/CMGTools/MonoXAnalysis/python/plotter/functions.cc+" % os.environ['CMSSW_BASE']);
+    ROOT.gROOT.ProcessLine(".L %s/src/CMGTools/WMass/python/plotter/functions.cc+" % os.environ['CMSSW_BASE']);
 
 def scalarToVector(x):
     x0 = x
-    x = re.sub(r"(LepGood|Lep|GammaGood|JetFwd|Jet|JetClean|GenTop|SV)(\d)_(\w+)", lambda m : "%s_%s[%d]" % (m.group(1),m.group(3),int(m.group(2))-1), x)
+    x = re.sub(r"(LepGood|LepCorr|GammaGood|JetFwd|Jet|JetClean|GenTop|SV)(\d)_(\w+)", lambda m : "%s_%s[%d]" % (m.group(1),m.group(3),int(m.group(2))-1), x)
     x = re.sub(r"\bmet\b", "met_pt", x)
     return x
 
