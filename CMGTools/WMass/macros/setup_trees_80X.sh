@@ -1,5 +1,17 @@
-#!/bin/tcsh
+#!/bin/sh
 # usage: ./setup_trees_80X.csh <rel53X> <rel80X>
+
+if [[ "X$1" == "X" ]]; then 
+    echo "usage: ./setup_trees_80X.sh <rel53X> <rel80X>"
+    exit
+fi
+
+if [[ "X$2" == "X" ]]; then 
+    echo "usage: ./setup_trees_80X.sh <rel53X> <rel80X>"
+    exit
+fi
+
+
 
 export rel53X=$1
 export rel80X=$2
