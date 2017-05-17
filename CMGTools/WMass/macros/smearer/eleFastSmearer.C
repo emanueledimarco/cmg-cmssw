@@ -49,9 +49,9 @@ void eleFastSmearer::Loop() {
   Long64_t nbytes = 0, nb = 0;
 
   // Create arrays to store the resolution fit maps
-  const Int_t NPtBins  = 13;
+  const Int_t NPtBins  = 12;
   const Int_t NEtaBins = 14;
-  double ptBins[NPtBins+1]   = { 15.,20.,25.,30.,35.,40.,45.,50.,55.,60.,65.,70.,80.,120.};
+  double ptBins[NPtBins+1]   = { 15.,20.,25.,30.,35.,40.,45.,50.,55.,60.,65.,70.,120.};
   double etaBins[NEtaBins+1] = { 0.0, 0.2, 0.4, 0.6, 0.8, 1.0, 1.2, 1.4442, 1.566, 1.8, 2.0, 2.2, 2.4, 2.5, 2.6 };
 
   // Create histograms: resolution maps
@@ -142,8 +142,9 @@ void eleFastSmearer::Loop() {
       // trigger match   
       // if (LepGood_trgMatch[ilep]<0.5) continue;  
 
-      // eta cut   
+      // eta and pT cut (minimal, probably looser than applied in the analysis)   
       if (fabs(LepGood_scEta[ilep])>2.5) continue;
+      if (LepGood_pt[ilep]<15) continue;
 
       // barrel-endcap transition    
       if ( fabs(LepGood_scEta[ilep])>1.442 && fabs(LepGood_scEta[ilep])<1.566 ) continue;
