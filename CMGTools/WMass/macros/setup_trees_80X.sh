@@ -1,14 +1,14 @@
 #!/bin/sh
-# usage: ./setup_trees_80X.csh <rel53X> <rel80X>
+# usage: source setup_trees_80X.csh <rel53X> <rel80X>
 
 if [[ "X$1" == "X" ]]; then 
-    echo "usage: ./setup_trees_80X.sh <rel53X> <rel80X>"
-    exit
+    echo "usage: source setup_trees_80X.sh <rel53X> <rel80X>"
+    return
 fi
 
 if [[ "X$2" == "X" ]]; then 
-    echo "usage: ./setup_trees_80X.sh <rel53X> <rel80X>"
-    exit
+    echo "usage: source setup_trees_80X.sh <rel53X> <rel80X>"
+    return
 fi
 
 
