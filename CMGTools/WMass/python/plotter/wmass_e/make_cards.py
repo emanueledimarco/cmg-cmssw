@@ -2,11 +2,11 @@
 from shutil import copyfile
 import re, sys, os, os.path, subprocess
 
-FASTTEST=''
-#FASTTEST='--max-entries 1000 '
-masses = range(0,39)
-#masses = [19]
-T='/data1/emanuele/wmass/TREES_1LEP_53X_V2_WSKIM_V4/'
+#FASTTEST=''
+FASTTEST='--max-entries 1000 '
+#masses = range(0,39)
+masses = [19]
+T='/data1/emanuele/wmass/TREES_1LEP_53X_V3/'
 if 'pccmsrm29' in os.environ['HOSTNAME']: T = T.replace('/data1/emanuele/wmass','/u2/emanuele')
 elif 'lxplus' in os.environ['HOSTNAME']: T = T.replace('/data1/emanuele/wmass','/afs/cern.ch/work/e/emanuele/TREES/')
 elif 'cmsrm-an' in os.environ['HOSTNAME']: T = T.replace('/data1/emanuele/wmass','/t3/users/dimarcoe/')
@@ -17,6 +17,7 @@ MCA=BASECONFIG+'/mca-53X-wenu.txt'
 CUTFILE=BASECONFIG+'/wenu.txt'
 SYSTFILE=BASECONFIG+'/systsEnv.txt'
 VAR="mt_lu_cart(LepCorr1_pt,LepGood1_phi,w_ux,w_uy) 90,30,120"
+#VAR="LepCorr1_pt 60,30,60"
 NPDFSYSTS=53 # for CT10
 
 def writePdfSystsToMCA(sample,syst,dataset,xsec,vec_weight,filename):
