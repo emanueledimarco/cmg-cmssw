@@ -23,3 +23,9 @@ CMS_We_elescale :  W: .* : elescale       : templates
 # recoil uncertainty
 CMS_We_recoil :  W: .* : recoil       : templates 
 
+# Fake rate uncertainties
+# 1+2) Measurement of the fake rate: normalization and shapes
+CMS_We_FRe_norm   : data_fakes  : .* : FRe_norm : templates
+CMS_We_FRe_pt     : data_fakes  : .* : FRe_pt   : templatesShapeOnly
+
+
