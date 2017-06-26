@@ -35,7 +35,7 @@ class EventVarsWmass:
         self.sample_nevt = sample_nevt
         self.isMC = not any(x in dataset for x in "DoubleMu DoubleEl DoubleEG MuEG MuonEG SingleMu SingleEl".split())
         self.electronEnergyCalibrator = ElectronCalibrator(self.isMC,
-                                                           "EgammaAnalysis/ElectronTools/data//WMass_Winter17_ResidualCorrections_ele",
+                                                           "EgammaAnalysis/ElectronTools/data//WMass_Winter17_ResidualCorrections_smooth_ele",
                                                            "%s/src/CMGTools/WMass/data/electronscale/systs_el_scale.txt" % os.environ['CMSSW_BASE'])
     def listBranches(self):
         self.wmass_steps = [x for x in range(0,24,2)] + [x for x in range(24,54,10)] + [x for x in range(54,141,20)]
