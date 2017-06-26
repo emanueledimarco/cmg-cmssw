@@ -42,11 +42,11 @@ def doFit(corrections,category,xmin,xmax,closure=False):
     edges = [float(c[0]) for c in corr_bycat]
     edges.append(100.)
     print edges
-    histo = ROOT.TH1D("histo","",len(edges)-1,array('f',edges))
-    graph = ROOT.TGraphErrors(len(edges)-1)
+    graph = ROOT.TGraphErrors(len(edges)-2)
     for b,corr in enumerate(corr_bycat):
-        graph.SetPoint(b,(edges[b+1]+edges[b])/2.,float(corr[2]))
-        graph.SetPointError(b,(edges[b+1]-edges[b])/2.,float(corr[3]))
+        if b==0: continue # skip the 10 GeV bin
+        graph.SetPoint(b-1,(edges[b+1]+edges[b])/2.,float(corr[2]))
+        graph.SetPointError(b-1,(edges[b+1]-edges[b])/2.,float(corr[3]))
     graph.GetXaxis().SetTitle("electron p_{T} [GeV]")
     graph.GetYaxis().SetTitle("correction")
     
@@ -89,7 +89,6 @@ if __name__ == "__main__":
         for cat in elecats:
             pol = doFit(corrs,(etab,cat),XMIN,XMAX)
             dumpPolynomial(pol,1,etab,cat,outfile)
-            doFit(corrs,(etab,cat),XMIN,XMAX,closure=True)
 
     # corrs_fine = parseCorrectionsFile(corr_file_fine)
     # for etab in etabins:
