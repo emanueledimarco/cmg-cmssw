@@ -6,14 +6,17 @@ import os
 
 ODIR=sys.argv[1]
 
-dowhat = "plots" 
+FASTTEST=''
+#FASTTEST='--max-entries 1000 '
+
+#dowhat = "plots" 
 #dowhat = "dumps" 
-#dowhat = "yields" 
+dowhat = "yields" 
 
 TREES = "-F mjvars/t '{P}/friends/evVarFriend_{cname}.root' --FMC sf/t '{P}/friends/sfFriend_{cname}.root' "
-TREESONLYSKIMW = "-P /data1/emanuele/wmass/TREES_1LEP_53X_V2_WSKIM_V4/"
-TREESONLYSKIMZ = "-P /data1/emanuele/wmass/TREES_1LEP_53X_V2_ZEESKIM_V3/"
-TREESONLYFULL = "-P /data1/emanuele/wmass/TREES_1LEP_53X_V2"
+TREESONLYSKIMW = "-P /data1/emanuele/wmass/TREES_1LEP_53X_V3_WSKIM_V7/"
+TREESONLYSKIMZ = "-P /data1/emanuele/wmass/TREES_1LEP_53X_V3_ZEESKIM_V7/"
+TREESONLYFULL = "-P /data1/emanuele/wmass/TREES_1LEP_53X_V3"
 
 def base(selection):
 
@@ -22,11 +25,11 @@ def base(selection):
     else:
         raise RuntimeError, 'Unknown selection'
 
-    CORE=' '.join([TREES,TREESONLYSKIMZ])
+    CORE=' '.join([TREES,TREESONLYSKIM])
     if 'pccmsrm29' in os.environ['HOSTNAME']: CORE = CORE.replace('/data1/emanuele/wmass','/u2/emanuele')
 
-    CORE+=" -f -j 2 -l 19.7 --s2v --tree treeProducerWMassEle "# --neg"
-    if dowhat == "plots": CORE+=" --lspam '#bf{CMS} #it{Preliminary}' --legendWidth 0.20 --legendFontSize 0.035 --showRatio --maxRatioRange 0.8 1.2 --fixRatioRange  --showMCError"
+    CORE+=" -f -j 4 -l 19.7 --s2v --tree treeProducerWMassEle "+FASTTEST
+    if dowhat == "plots": CORE+=" --lspam '#bf{CMS} #it{Preliminary}' --legendWidth 0.20 --legendFontSize 0.035 --showRatio --maxRatioRange 0.75 1.25 --fixRatioRange "
 
     if selection=='wenu':
         GO="%s wmass_e/mca-53X-wenu.txt wmass_e/wenu.txt "%CORE
@@ -34,8 +37,8 @@ def base(selection):
         if dowhat in ["plots","ntuple"]: GO+=" wmass_e/wenu_plots.txt "
     elif selection=='zee':
         GO="%s wmass_e/mca-53X-zee.txt wmass_e/zee.txt "%CORE
-        GO="%s -W 'puWeight*SF_LepTight_2l'"%GO
-        if dowhat in ["plots","ntuple"]: GO+=" wmass_e/zee_plots.txt --xP 'mZ1' "
+        GO="%s -W 'puWeight*SF_LepTight_2l' --sp 'Z' "%GO
+        if dowhat in ["plots","ntuple"]: GO+=" wmass_e/zee_plots.txt --sP 'z_mll,mZ1' "
     else:
         raise RuntimeError, 'Unknown selection'
 
@@ -50,6 +53,7 @@ def runIt(GO,name,plots=[],noplots=[]):
     elif dowhat == "yields": print 'echo %s; python mcAnalysis.py'%name,GO,' '.join(sys.argv[3:])
     elif dowhat == "dumps":  print 'echo %s; python mcDump.py'%name,GO,' '.join(sys.argv[3:])
     elif dowhat == "ntuple": print 'echo %s; python mcNtuple.py'%name,GO,' '.join(sys.argv[3:])
+
 def add(GO,opt):
     return '%s %s'%(GO,opt)
 def setwide(x):
@@ -77,5 +81,7 @@ if __name__ == '__main__':
         if '_notebeb' in torun: x = add(x,"-A alwaystrue notebeb 'max(abs(LepGood1_eta),abs(LepGood2_eta))>1.57' --scaleSigToData")
         if '_gg' in torun: x = add(x,"-A alwaystrue goldgold 'min(LepGood1_r9,LepGood2_r9)>0.94' --scaleSigToData")
         if '_notgg' in torun: x = add(x,"-A alwaystrue notgoldgold 'min(LepGood1_r9,LepGood2_r9)<0.94' --scaleSigToData")
-        
-        runIt(x,'%s'%torun)
+    elif 'wenu' in torun:
+        x = base('wenu')
+
+    runIt(x,'%s'%torun)

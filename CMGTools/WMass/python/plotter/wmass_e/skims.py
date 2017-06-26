@@ -33,7 +33,7 @@ if __name__ == "__main__":
            os.makedirs(outputDirFSkims)
     else: print "Make only the friend trees in dir ",outputDirFSkims
 
-    OPTS = ' -P '+treeDir+' --s2v -j 4 -F mjvars/t "'+treeFDir+'/evVarFriend_{cname}.root" '
+    OPTS = ' --obj treeProducerWMassEle -P '+treeDir+' --s2v -j 4 -F mjvars/t "'+treeFDir+'/evVarFriend_{cname}.root" '
 
     varsToKeep = []
     if options.varfile!=None:
@@ -41,7 +41,6 @@ if __name__ == "__main__":
             varsToKeep = f.read().splitlines()
         OPTS += "--drop '*' --keep "+" --keep ".join(varsToKeep)
     
-
     cmdSkim = "python skimTrees.py "+" ".join(mcargs)+" " + outputDirSkims + OPTS
     cmdFSkimEv = " python skimFTrees.py "+outputDirSkims+" "+treeFDir+" "+outputDirFSkims
     cmdFSkimSf = " python skimFTrees.py "+outputDirSkims+" "+treeFDir+" "+outputDirFSkims+' -f sfFriend -t "sf/t" '
