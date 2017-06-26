@@ -6,7 +6,7 @@ import re, sys, os, os.path, subprocess
 FASTTEST='--max-entries 1000 '
 #masses = range(0,39)
 masses = [19]
-T='/data1/emanuele/wmass/TREES_1LEP_53X_V3/'
+T='/data1/emanuele/wmass/TREES_1LEP_53X_V3_WSKIM_V7/'
 if 'pccmsrm29' in os.environ['HOSTNAME']: T = T.replace('/data1/emanuele/wmass','/u2/emanuele')
 elif 'lxplus' in os.environ['HOSTNAME']: T = T.replace('/data1/emanuele/wmass','/afs/cern.ch/work/e/emanuele/TREES/')
 elif 'cmsrm-an' in os.environ['HOSTNAME']: T = T.replace('/data1/emanuele/wmass','/t3/users/dimarcoe/')

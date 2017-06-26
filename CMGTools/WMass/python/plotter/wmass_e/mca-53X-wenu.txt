@@ -4,8 +4,8 @@ incl_datafakes: + ; IncludeMca="wmass_e/mca-includes/mca-data.txt", FakeRate="wm
 incl_data : + ; IncludeMca="wmass_e/mca-includes/mca-data.txt"
 
 # electron scale systematics
-incl_ewkmc_recoil_Up : + ; IncludeMca="wmass_e/mca-includes/mca-ewkmc.txt", FakeRate="wmass_e/fr-lepUp.txt", SkipMe=True, PostFix="_elescale_Up" 
-incl_ewkmc_recoil_Up : + ; IncludeMca="wmass_e/mca-includes/mca-ewkmc.txt", FakeRate="wmass_e/fr-lepDn.txt", SkipMe=True, PostFix="_elescale_Dn" 
+incl_ewkmc_elescale_Up : + ; IncludeMca="wmass_e/mca-includes/mca-ewkmc.txt", FakeRate="wmass_e/fr-lepUp.txt", SkipMe=True, PostFix="_elescale_Up" 
+incl_ewkmc_elescale_Up : + ; IncludeMca="wmass_e/mca-includes/mca-ewkmc.txt", FakeRate="wmass_e/fr-lepDn.txt", SkipMe=True, PostFix="_elescale_Dn" 
 
 # recoil systematics
 incl_ewkmc_recoil_Up : + ; IncludeMca="wmass_e/mca-includes/mca-ewkmc.txt", FakeRate="wmass_e/fr-recoilUp.txt", SkipMe=True, PostFix="_recoil_Up" 
