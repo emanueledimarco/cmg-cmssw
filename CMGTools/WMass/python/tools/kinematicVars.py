@@ -28,7 +28,7 @@ class KinematicVars:
         return self.branches[:]
     def CSFrame(self,dilepton):
         pMass = 0.938272
-        beamE = 8000;
+        beamE = 4000;
         sign = np.sign(dilepton.Z())
         proton1 = ROOT.TLorentzVector(0.,0.,sign*beamE,hypot(beamE,pMass));  proton2 = ROOT.TLorentzVector(0.,0.,-sign*beamE,hypot(beamE,pMass))
         proton1.Boost(-dilepton.BoostVector()); proton2.Boost(-dilepton.BoostVector())
@@ -40,13 +40,13 @@ class KinematicVars:
         return (xAxis,yAxis,CSAxis)
     def cosThetaCS(self,lplus,lminus):
         dilep = lplus + lminus
-        boostedLep = lminus
+        boostedLep = ROOT.TLorentzVector(lminus)
         boostedLep.Boost(-dilep.BoostVector())
         csframe = self.CSFrame(dilep)
         return cos(boostedLep.Angle(csframe[2]))
     def phiCS(self,lplus,lminus):
         dilep = lplus + lminus
-        boostedLep = lminus
+        boostedLep = ROOT.TLorentzVector(lminus)
         boostedLep.Boost(-dilep.BoostVector())
         csframe = self.CSFrame(dilep)
         phi = atan2((boostedLep.Vect()*csframe[1]),(boostedLep.Vect()*csframe[0]))
@@ -82,8 +82,8 @@ class KinematicVars:
         ret = {}; 
         genp = [p for p in Collection(event,"GenP6StatusThree","nGenP6StatusThree")] if self.isMC else []
         leps = [l for l in Collection(event,"LepGood","nLepGood")]
-        leps_4v=[ self.PtEtaPhiM4V(l.pt,l.eta,l.phi,0.511*e-3) for l in leps ]
-        
+        leps_4v=[ self.PtEtaPhiM4V(l.pt,l.eta,l.phi,0.000511) for l in leps ]
+
         ret["nAP"] = 5 if len(leps)>=2 else 0
         ret["AP"]=[]
         if len(leps)>=2:
