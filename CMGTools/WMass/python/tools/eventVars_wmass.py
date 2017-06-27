@@ -15,7 +15,9 @@ class SimpleVBoson:
         self.px1 = legs[0].Px(); self.py1 = legs[0].Py();
         self.px2 = legs[1].Px(); self.py2 = legs[1].Py();
     def pt(self):
-        return sqrt(hypot(self.pt1 + self.pt2 * cos(self.dphi), self.pt2*sin(self.dphi)))
+        return (self.legs[0]+self.legs[1]).Pt()
+    def y(self):
+        return (self.legs[0]+self.legs[1]).Rapidity()
     def mt(self):
         return sqrt(2*self.pt1*self.pt2*(1-cos(self.dphi)))
     def ux(self):
