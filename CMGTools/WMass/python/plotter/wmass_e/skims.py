@@ -44,6 +44,7 @@ if __name__ == "__main__":
     cmdSkim = "python skimTrees.py "+" ".join(mcargs)+" " + outputDirSkims + OPTS
     cmdFSkimEv = " python skimFTrees.py "+outputDirSkims+" "+treeFDir+" "+outputDirFSkims
     cmdFSkimSf = " python skimFTrees.py "+outputDirSkims+" "+treeFDir+" "+outputDirFSkims+' -f sfFriend -t "sf/t" '
+    cmdFSkimKin = " python skimFTrees.py "+outputDirSkims+" "+treeFDir+" "+outputDirFSkims+' -f kinVarFriend -t "kinvars/t" '
 
     if not options.friendOnly:
         print "Now skimming the main trees, keeping the following vars:\n",varsToKeep
@@ -53,6 +54,8 @@ if __name__ == "__main__":
     os.system(cmdFSkimEv)
     print "Now skimming the scale factors friend trees:\n"
     os.system(cmdFSkimSf)
+    print "Now skimming the kinematic variables friend trees:\n"
+    os.system(cmdFSkimKin)
 
     print "VERY DONE\n"
 
