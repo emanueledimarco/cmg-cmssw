@@ -9,11 +9,11 @@ ODIR=sys.argv[1]
 FASTTEST=''
 #FASTTEST='--max-entries 1000 '
 
-#dowhat = "plots" 
+dowhat = "plots" 
 #dowhat = "dumps" 
-dowhat = "yields" 
+#dowhat = "yields" 
 
-TREES = "-F mjvars/t '{P}/friends/evVarFriend_{cname}.root' --FMC sf/t '{P}/friends/sfFriend_{cname}.root' "
+TREES = "-F mjvars/t '{P}/friends/evVarFriend_{cname}.root' --FMC sf/t '{P}/friends/sfFriend_{cname}.root' -F kinvars/t '{P}/friends/kinVarFriend_{cname}.root' "
 TREESONLYSKIMW = "-P /data1/emanuele/wmass/TREES_1LEP_53X_V3_WSKIM_V7/"
 TREESONLYSKIMZ = "-P /data1/emanuele/wmass/TREES_1LEP_53X_V3_ZEESKIM_V7/"
 TREESONLYFULL = "-P /data1/emanuele/wmass/TREES_1LEP_53X_V3"
@@ -28,7 +28,7 @@ def base(selection):
     CORE=' '.join([TREES,TREESONLYSKIM])
     if 'pccmsrm29' in os.environ['HOSTNAME']: CORE = CORE.replace('/data1/emanuele/wmass','/u2/emanuele')
 
-    CORE+=" -f -j 4 -l 19.7 --s2v --tree treeProducerWMassEle "+FASTTEST
+    CORE+=" -f -j 4 -l 19.7 --s2v --tree treeProducerWMassEle --obj tree "+FASTTEST
     if dowhat == "plots": CORE+=" --lspam '#bf{CMS} #it{Preliminary}' --legendWidth 0.20 --legendFontSize 0.035 --showRatio --maxRatioRange 0.75 1.25 --fixRatioRange "
 
     if selection=='wenu':
@@ -38,7 +38,7 @@ def base(selection):
     elif selection=='zee':
         GO="%s wmass_e/mca-53X-zee.txt wmass_e/zee.txt "%CORE
         GO="%s -W 'puWeight*SF_LepTight_2l' --sp 'Z' "%GO
-        if dowhat in ["plots","ntuple"]: GO+=" wmass_e/zee_plots.txt --sP 'z_mll,mZ1' "
+        if dowhat in ["plots","ntuple"]: GO+=" wmass_e/zee_plots.txt "
     else:
         raise RuntimeError, 'Unknown selection'
 
@@ -77,10 +77,11 @@ if __name__ == '__main__':
 
     if 'zee_' in torun:
         x = base('zee')
-        if '_ebeb' in torun: x = add(x,"-A alwaystrue ebeb 'max(abs(LepGood1_eta),abs(LepGood2_eta))<1.44'  --scaleSigToData")
-        if '_notebeb' in torun: x = add(x,"-A alwaystrue notebeb 'max(abs(LepGood1_eta),abs(LepGood2_eta))>1.57' --scaleSigToData")
-        if '_gg' in torun: x = add(x,"-A alwaystrue goldgold 'min(LepGood1_r9,LepGood2_r9)>0.94' --scaleSigToData")
-        if '_notgg' in torun: x = add(x,"-A alwaystrue notgoldgold 'min(LepGood1_r9,LepGood2_r9)<0.94' --scaleSigToData")
+        if '_ebeb' in torun: x = add(x,"-A alwaystrue ebeb 'max(abs(LepGood1_eta),abs(LepGood2_eta))<1.44'  --scaleSigToData --sP 'z_mll,mZ1' ")
+        if '_notebeb' in torun: x = add(x,"-A alwaystrue notebeb 'max(abs(LepGood1_eta),abs(LepGood2_eta))>1.57' --scaleSigToData --sP 'z_mll,mZ1' ")
+        if '_gg' in torun: x = add(x,"-A alwaystrue goldgold 'min(LepGood1_r9,LepGood2_r9)>0.94' --scaleSigToData --sP 'z_mll,mZ1' ")
+        if '_notgg' in torun: x = add(x,"-A alwaystrue notgoldgold 'min(LepGood1_r9,LepGood2_r9)<0.94' --scaleSigToData --sP 'z_mll,mZ1' ")
+        if '_w_reweight' in torun: x = add(x,"--sP 'z_mll,ptZ,costheta_cs,phi_cs,sumAiPi,y_vs_ctheta,y_vs_phi,y_vs_sumAiPi' ")
     elif 'wenu' in torun:
         x = base('wenu')
 
