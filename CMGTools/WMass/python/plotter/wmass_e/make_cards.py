@@ -37,10 +37,13 @@ def writePdfSystsToSystFile(sample,syst,channel,filename):
 from optparse import OptionParser
 parser = OptionParser(usage="%prog testname ")
 parser.add_option("--etaBins", dest="etaBins", action="append", default=[], help="Give a list of lepton eta bins to make fit categories")
+parser.add_option("--etaBinEdges", dest="etaBinEdges", type="string", default=None, help="Give a comma separated list of lepton eta bin edges to make fit categories")
 parser.add_option("-q", "--queue",    dest="queue",     type="string", default=None, help="Run jobs on lxbatch instead of locally");
 parser.add_option("--dry-run", dest="dryRun",    action="store_true", default=False, help="Do not run the job, only print the command");
 (options, args) = parser.parse_args()
 
+if not os.path.exists("cards/"):
+    os.makedirs("cards/")
 outdir="cards/"+args[0]
 
 # write systematic variations to be considered in the MCA file
@@ -75,8 +78,14 @@ if options.queue:
             )
 
 etaBins=options.etaBins if options.etaBins!=[] else ['0','5']
+if options.etaBinEdges:
+    # print "bins: " + str(etaBins)
+    etaBins = [binEdge for binEdge in options.etaBinEdges.split(',')]
+    # print "bins: " + str(etaBins)
+    # quit()
+
 for ieta in range(len(etaBins)-1):
-    subdir = "eta_"+str(ieta) if options.etaBins!=[] else 'etaIncl'
+    subdir = "eta_"+str(ieta) if (options.etaBins!=[] or options.etaBinEdges) else 'etaIncl'
     etacut=" -A alwaystrue eta%d 'abs(LepGood1_eta)>%s && abs(LepGood1_eta)<%s' " % (ieta,etaBins[ieta],etaBins[ieta+1])
     myout = outdir + "/" + subdir
     if not os.path.exists(myout): os.mkdir(myout)
