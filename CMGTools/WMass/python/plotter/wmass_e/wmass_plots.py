@@ -84,5 +84,6 @@ if __name__ == '__main__':
         if '_w_reweight' in torun: x = add(x,"--sP 'z_mll,ptZ,costheta_cs,phi_cs,sumAiPi,y_vs_ctheta,y_vs_phi,y_vs_sumAiPi' ")
     elif 'wenu' in torun:
         x = base('wenu')
+        if '_w_reweight' in torun: x = x.replace("-W 'puWeight*SF_LepTight_1l'","-W 'puWeight*SF_LepTight_1l*zpt_w*aipi_w'")
 
     runIt(x,'%s'%torun)
