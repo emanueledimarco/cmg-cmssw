@@ -145,11 +145,12 @@ class KinematicVars:
         xmax = histo.GetXaxis().GetXmax()-1e-3
         xbin = histo.GetXaxis().FindBin(min(max(ptz,xmin),xmax))
         return histo.GetBinContent(xbin)
-    def PtEtaPhiM4V(self,pt,eta,phi,pdgId):
+    def PtEtaPhiM4V(self,pt,eta,phi,pdgId,motherId=None):
         tlv = ROOT.TLorentzVector()
         m = 0.000511 if abs(pdgId)==11 else 0.1057
         tlv.SetPtEtaPhiM(pt,eta,phi,m)
         tlv.charge = np.sign(pdgId)
+        if motherId!=None: tlv.motherId = motherId
         return tlv
     def __call__(self,event):
         # prepare output
@@ -158,7 +159,7 @@ class KinematicVars:
         leps = [l for l in Collection(event,"LepGood","nLepGood")]
 
         leps_4v=[ self.PtEtaPhiM4V(l.pt,l.eta,l.phi,l.pdgId) for l in leps ]
-        genleps_4v=[ self.PtEtaPhiM4V(p.pt,p.eta,p.phi,p.pdgId) for p in genp if ( (abs(p.pdgId)>=11 and abs(p.pdgId)<=14) and (p.motherId==23 or abs(p.motherId)==24) ) ]
+        genleps_4v=[ self.PtEtaPhiM4V(p.pt,p.eta,p.phi,p.pdgId,p.motherId) for p in genp if ( (abs(p.pdgId)>=11 and abs(p.pdgId)<=14) and (p.motherId==23 or abs(p.motherId)==24) and abs(p.grandmaId)!=6 ) ]
         genleps_4v.sort(key = lambda p: p.Pt(), reverse = True)
 
         ret["nAP"] = 5 if len(leps)>=2 else 0
@@ -177,7 +178,8 @@ class KinematicVars:
 
         # kinematic reweighting
         if len(genleps_4v)==2:
-            (lplus,lminus) = (genleps_4v[0],genleps_4v[1]) if genleps_4v[0].charge>0 else (genleps_4v[1],genleps_4v[0])
+            (lplus,lminus) = (genleps_4v[0],genleps_4v[1]) if genleps_4v[1].charge<0 else (genleps_4v[1],genleps_4v[0]) # Z or W- case: use l-
+            if genleps_4v[0].motherId==24: (lplus,lminus) = (genleps_4v[0],genleps_4v[1]) if genleps_4v[1].charge==0 else (genleps_4v[1],genleps_4v[0]) # W+ case: use l+
             Z = SimpleVBoson(genleps_4v[:2])
             costheta_cs = self.cosThetaCS(lplus,lminus); phi_cs = self.phiCS(lplus,lminus);
             sumAiPi = 1+costheta_cs*costheta_cs+sum([self.A_i(i,Z.pt(),Z.y())*self.P_i(acos(costheta_cs),phi_cs,i) for i in range(ret["nAP"])])
