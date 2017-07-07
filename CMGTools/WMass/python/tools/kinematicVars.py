@@ -72,15 +72,27 @@ class DrellYanAngularReweighter:
             bin = self.histo_sig.FindBin(min(max(valx,xmin),xmax),min(max(valy,ymin),ymax))
         return self.weights[bin]
 
+class ZtoWTransport:
+    def __init__(self,hname,plotfile=None):
+        if plotfile == None: plotfile="%s/src/CMGTools/WMass/data/theory/angularcoeffs/woverz.root" % os.environ['CMSSW_BASE']
+        tf = ROOT.TFile.Open(plotfile)
+        self.ratio = tf.Get(hname).Clone("histo")
+    def __call__(self,valx):
+        xmin = self.ratio.GetXaxis().GetXmin()+1e-3
+        xmax = self.ratio.GetXaxis().GetXmax()-1e-3
+        bin = self.ratio.FindBin(min(max(valx,xmin),xmax))
+        return self.ratio.GetBinContent(bin)
+
 class KinematicVars:
     def __init__(self):
         ROOT.gSystem.Load("libFWCoreFWLite.so")
         ROOT.AutoLibraryLoader.enable()
         ROOT.gSystem.Load("libCMGToolsWMass.so")
-        self.zpt_weight = DrellYanAngularReweighter("ptZ")
+        self.zpt_weight = DrellYanAngularReweighter("scaledptZ",True)
         self.aipi_weight = DrellYanAngularReweighter("y_vs_sumAiPi",True)
         self.cth_weight = DrellYanAngularReweighter("y_vs_ctheta")
         self.phi_weight = DrellYanAngularReweighter("y_vs_phi")
+        self.ZtoW = ZtoWTransport("gen_scaledptv_WZ_ratio")
     def initSample(self,nevents,dataset):
         self.isMC = not any(x in dataset for x in "DoubleMu DoubleEl DoubleEG MuEG MuonEG SingleMu SingleEl".split())
         aifilename = "%s/src/CMGTools/WMass/data/theory/angularcoeffs/Ai_8TeV_atlas.root" % os.environ['CMSSW_BASE']
@@ -94,7 +106,8 @@ class KinematicVars:
     def listBranches(self):
         mylist = [ ("nAP","I"), ("AP","F",8,"nAP"),
                    ("z_y","F"), ("costheta_cs","F"), ("phi_cs","F"),
-                   ("zpt_w","F"), ("aipi_w","F"), ("cth_w","F"), ("phi_w","F")]
+                   ("zpt_w","F"), ("zpt_w_up","F"), ("zpt_w_dn","F"),
+                   ("aipi_w","F"), ("cth_w","F"), ("phi_w","F")]
         self.branches = mylist
         print "self.branches = ",self.branches[:]
         return self.branches[:]
@@ -186,7 +199,10 @@ class KinematicVars:
             ret["aipi_w"] = self.aipi_weight(sumAiPi,abs(Z.y()))
             ret["cth_w"] = self.cth_weight(costheta_cs,abs(Z.y()))
             ret["phi_w"] = self.phi_weight(phi_cs,abs(Z.y()))
-            ret["zpt_w"] = self.zpt_weight(Z.pt())
+            ptOverM = Z.pt()/Z.mll()*91.1876
+            ret["zpt_w"] = self.zpt_weight(ptOverM)
+            ret["zpt_w_up"] = ret["zpt_w"]*(2-self.ZtoW(ptOverM))
+            ret["zpt_w_dn"] = ret["zpt_w"]*self.ZtoW(ptOverM)
         else:
             ret["aipi_w"] = ret["cth_w"] = ret["phi_w"] = ret["zpt_w"] = 1.0
 
