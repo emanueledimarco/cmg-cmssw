@@ -13,7 +13,7 @@ dowhat = "plots"
 #dowhat = "dumps" 
 #dowhat = "yields" 
 
-TREES = "-F mjvars/t '{P}/friends/evVarFriend_{cname}.root' --FMC sf/t '{P}/friends/sfFriend_{cname}.root' -F kinvars/t '{P}/friends/kinVarFriend_{cname}.root' "
+TREES = "-F mjvars/t '{P}/friends/evVarFriend_{cname}.root' --FMC sf/t '{P}/friends/sfFriend_{cname}.root' --FMC kinvars/t '{P}/friends/kinVarFriend_{cname}.root' "
 TREESONLYSKIMW = "-P /data1/emanuele/wmass/TREES_1LEP_53X_V3_WSKIM_V7/"
 TREESONLYSKIMZ = "-P /data1/emanuele/wmass/TREES_1LEP_53X_V3_ZEESKIM_V7/"
 TREESONLYFULL = "-P /data1/emanuele/wmass/TREES_1LEP_53X_V3"
@@ -37,7 +37,7 @@ def base(selection):
         if dowhat in ["plots","ntuple"]: GO+=" wmass_e/wenu_plots.txt "
     elif selection=='zee':
         GO="%s wmass_e/mca-53X-zee.txt wmass_e/zee.txt "%CORE
-        GO="%s -W 'puWeight*SF_LepTight_2l' --sp 'Z' "%GO
+        GO="%s -W 'puWeight*SF_LepTight_2l*zpt_w*aipi_w' --sp 'Z' "%GO
         if dowhat in ["plots","ntuple"]: GO+=" wmass_e/zee_plots.txt "
     else:
         raise RuntimeError, 'Unknown selection'
@@ -49,7 +49,7 @@ def procs(GO,mylist):
 def sigprocs(GO,mylist):
     return procs(GO,mylist)+' --showIndivSigs --noStackSig'
 def runIt(GO,name,plots=[],noplots=[]):
-    if   dowhat == "plots":  print 'python mcPlots.py',"--pdir %s/%s"%(ODIR,name),GO,' '.join(['--sP %s'%p for p in plots]),' '.join(['--xP %s'%p for p in noplots]),' '.join(sys.argv[3:])
+    if   dowhat == "plots":  print 'python mcPlots.py',"--pdir %s/%s"%(ODIR,name),GO,' '.join(['--sP \'%s\''%p for p in plots]),' '.join(['--xP \'%s\''%p for p in noplots]),' '.join(sys.argv[3:])
     elif dowhat == "yields": print 'echo %s; python mcAnalysis.py'%name,GO,' '.join(sys.argv[3:])
     elif dowhat == "dumps":  print 'echo %s; python mcDump.py'%name,GO,' '.join(sys.argv[3:])
     elif dowhat == "ntuple": print 'echo %s; python mcNtuple.py'%name,GO,' '.join(sys.argv[3:])
@@ -81,9 +81,15 @@ if __name__ == '__main__':
         if '_notebeb' in torun: x = add(x,"-A alwaystrue notebeb 'max(abs(LepGood1_eta),abs(LepGood2_eta))>1.57' --scaleSigToData --sP 'z_mll,mZ1' ")
         if '_gg' in torun: x = add(x,"-A alwaystrue goldgold 'min(LepGood1_r9,LepGood2_r9)>0.94' --scaleSigToData --sP 'z_mll,mZ1' ")
         if '_notgg' in torun: x = add(x,"-A alwaystrue notgoldgold 'min(LepGood1_r9,LepGood2_r9)<0.94' --scaleSigToData --sP 'z_mll,mZ1' ")
-        if '_w_reweight' in torun: x = add(x,"--sP 'z_mll,ptZ,costheta_cs,phi_cs,sumAiPi,y_vs_ctheta,y_vs_phi,y_vs_sumAiPi' ")
+        if '_w_reweight' in torun and dowhat=="plots": x = add(x,"--sP 'z_mll,ptZ,scaledptZ,costheta_cs,phi_cs,sumAiPi,y_vs_ctheta,y_vs_phi,y_vs_sumAiPi' ")
+        if '_genpt' in torun: x = add(x,"--sP 'gen_ptv,gen_scaledptv' --xp 'data' -p 'Z' ")
     elif 'wenu' in torun:
         x = base('wenu')
         if '_w_reweight' in torun: x = x.replace("-W 'puWeight*SF_LepTight_1l'","-W 'puWeight*SF_LepTight_1l*zpt_w*aipi_w'")
+        if '_genpt' in torun: x = add(x,"--sP 'gen_ptv,gen_scaledptv' --xp 'data' -p 'W' ")
 
-    runIt(x,'%s'%torun)
+    
+    plots = [] # if empty, to all the ones of the txt file
+    if "gen" in torun: noplots = []
+    else: noplots = ["^gen_.*"]
+    runIt(x,'%s'%torun,plots,noplots)
