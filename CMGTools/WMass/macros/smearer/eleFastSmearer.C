@@ -123,7 +123,7 @@ void eleFastSmearer::Loop() {
     int genPosEtaBin = FindBin( fabs(genPosEta) , etaBins, NEtaBins);
 
     // MC efficiency: denominator
-    DenEfficiency_PtEta->Fill(genElePt, fabs(genEleEta));   // here I fill wo pu-weight => put it at num only                  
+    DenEfficiency_PtEta->Fill(genElePt, fabs(genEleEta));   // here I fill wo pu-weight => put it at num only           
     DenEfficiency_PtEta->Fill(genPosPt, fabs(genPosEta));   // here I fill wo pu-weight => put it at num only               
 
     // trigger bit                                                                              
@@ -150,7 +150,7 @@ void eleFastSmearer::Loop() {
       if ( fabs(LepGood_scEta[ilep])>1.442 && fabs(LepGood_scEta[ilep])<1.566 ) continue;
 
       // trigger emulation
-      if (LepGood_eleMVAPreselId[ilep]==0) continue;
+      // if (LepGood_eleMVAPreselId[ilep]==0) continue;
 
       // ID + isolation + conv.rejection
       if (LepGood_eleMVAId[ilep]<2)       continue;
