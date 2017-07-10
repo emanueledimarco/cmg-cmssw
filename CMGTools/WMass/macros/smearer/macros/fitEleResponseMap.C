@@ -88,8 +88,16 @@ void fitEleResponseMap()  {
       if (i==13 && j==2) mean = new RooRealVar("mean","mean",0.,-0.1,0.1);
       if (i==13 && j==3) mean = new RooRealVar("mean","mean",0.,-0.1,0.1);
       if (i==13 && j==4) mean = new RooRealVar("mean","mean",0.,-0.1,0.1);
+      if (i==2 && j==8)  sigma = new RooRealVar("sigma","sigma",0.03,0.0001,0.07);
       if (i==8 && j==11) sigma = new RooRealVar("sigma","sigma",0.03,0.0001,0.07);
       if (i==9 && j==12) sigma = new RooRealVar("sigma","sigma",0.03,0.0001,0.07);
+      if (i==4 && j==10) sigma = new RooRealVar("sigma","sigma",0.03,0.0001,0.07);
+      if (i==4 && j==12) sigma = new RooRealVar("sigma","sigma",0.03,0.0001,0.07);
+      if (i==5 && j==9)  sigma = new RooRealVar("sigma","sigma",0.03,0.0001,0.07);
+      if (i==5 && j==12) sigma = new RooRealVar("sigma","sigma",0.03,0.0001,0.07);
+      if (i==8 && j==10) sigma = new RooRealVar("sigma","sigma",0.03,0.0001,0.07);
+      if (i==10 && j==1) sigma = new RooRealVar("sigma","sigma",0.03,0.0001,0.07);
+      if (i==11 && j==10) sigma = new RooRealVar("sigma","sigma",0.03,0.0001,0.07);
 
       RooRealVar *alphaL = new RooRealVar("alphaL","alphaL",5,0,50);
       RooRealVar *nL     = new RooRealVar("nL","nL",3,0,30);
