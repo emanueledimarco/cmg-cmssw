@@ -117,7 +117,7 @@ for charge in charges:
             #    target_dc = '{subdir}/wenu_cards_morphed_{charge}/morphed_datacard_minus.txt'.format(subdir=subdir,charge=charge)
 
             print 'running combineCards.py'
-            combineCardsCmd = 'combineCards.py {dcs} >& {target_dc}'.format(subdir=subdir, dcs=dcs, target_dc=target_dc)
+            combineCardsCmd = 'combineCards.py {dcs} >& {target_dc}'.format(dcs=dcs, target_dc=target_dc)
             print combineCardsCmd
             ## run combineCards and make the workspace
             os.system(combineCardsCmd )

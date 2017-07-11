@@ -82,7 +82,7 @@ else: etaBins=['0','5']
 print "Categories in lepton eta = ",etaBins
 
 for ieta in range(len(etaBins)-1):
-    subdir = "eta_"+str(ieta) if options.etaBins!=[] else 'etaIncl'
+    subdir = ("eta_%.1f_%.1f" % (float(etaBins[ieta]),float(etaBins[ieta+1]))).replace(".","") if len(options.etaBins) else 'etaIncl'
     etacut=" -A alwaystrue eta%d 'abs(LepGood1_eta)>%s && abs(LepGood1_eta)<%s' " % (ieta,etaBins[ieta],etaBins[ieta+1])
     myout = outdir + "/" + subdir
     if not os.path.exists(myout): os.mkdir(myout)
