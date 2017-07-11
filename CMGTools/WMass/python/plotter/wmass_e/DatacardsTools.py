@@ -24,7 +24,7 @@ class CardsChecker:
             if not os.path.exists(self.card_dir+"/"+dc): 
                 print "datacard ",dc," is not present in ",self.card_dir
                 resubcmds[key] = "bsub -q {queue} -o {dir}/{logfile} {dir}/{srcfile}".format(
-                    queue="8nh", dir=self.card_dir+"/jobs", logfile=key+"_resub.log", srcfile=key+".sh")
+                    queue="8nh", dir="/".join([os.getcwd(),self.card_dir,"jobs"]), logfile=key+"_resub.log", srcfile=key+".sh")
         for key,f in self.cardinputs.iteritems():
             f_ok = True
             if not os.path.exists(self.card_dir+"/"+f): 
@@ -37,7 +37,7 @@ class CardsChecker:
                     f_ok = False
             if not f_ok: 
                 resubcmds[key] = "bsub -q {queue} -o {dir}/{logfile} {dir}/{srcfile}".format(
-                    queue="8nh", dir=self.card_dir+"/jobs", logfile=key+"_resub.log", srcfile=key+".sh")
+                    queue="8nh", dir="/".join([os.getcwd(),self.card_dir,"jobs"]), logfile=key+"_resub.log", srcfile=key+".sh")
         return resubcmds
 
 if __name__ == "__main__":
