@@ -28,4 +28,5 @@ CMS_We_recoil :  W: .* : recoil       : templates
 CMS_We_FRe_norm   : data_fakes  : .* : FRe_norm : templates
 CMS_We_FRe_pt     : data_fakes  : .* : FRe_pt   : templatesShapeOnly
 
-
+# ptW uncertainty (from Z pT reweighting)
+CMS_W_ptw  : W : .* : theoryptw : templates
