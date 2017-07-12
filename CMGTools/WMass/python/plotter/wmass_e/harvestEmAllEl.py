@@ -3,6 +3,9 @@ import CombineHarvester.CombinePdfs.morphing as morphing
 import ROOT
 import glob, datetime, os
 
+# import some parameters from wmass_parameters.py, they are also used by other scripts
+from wmass_parameters import *
+
 def harvestEm(subdir, mwrange, charge='both'):
     cmb = ch.CombineHarvester()
     
@@ -19,7 +22,8 @@ def harvestEm(subdir, mwrange, charge='both'):
 
     # We'll have three copies of the observation, one for each mass point.
     # Filter all but one copy.
-    cmb.FilterObs(lambda obj: obj.mass() != '15')
+    #cmb.FilterObs(lambda obj: obj.mass() != '15')
+    cmb.FilterObs(lambda obj: obj.mass() != str(mass_id_central))
     
     # Create workspace to hold the morphing pdfs and the mass
     w = ROOT.RooWorkspace('morph', 'morph')
@@ -63,12 +67,14 @@ def harvestEm(subdir, mwrange, charge='both'):
 date = datetime.date.today().isoformat()
 date+='_charges'
 
-card_dir = 'cards/cards_260517/'
+card_dir = 'cards/test_5massPoints/'
 subdirs = [x[0] for x in os.walk(card_dir)]
 
-mwrange='0,30'
-npoints = 31
-central = 15
+#mwrange='0,30'
+# values from wmass_parameters.py
+mwrange='%d,%d' % (mass_id_down,mass_id_up)
+npoints = n_mass_id
+central = mass_id_central
 
 runHarvest = True
 runBatch   = False
