@@ -2,11 +2,19 @@
 from shutil import copyfile
 import re, sys, os, os.path, subprocess
 
-#FASTTEST=''
-FASTTEST='--max-entries 1000 '
+# import some parameters from wmass_parameters.py, they are also used by other scripts
+from wmass_parameters import *
+
+if len(sys.argv) < 2:
+    print "----- WARNING -----"
+    print "Too few arguments: need at list output folder name."
+    print "-------------------"
+    quit()
+
+
 FASTTEST=''
 #FASTTEST='--max-entries 1000 '
-masses = range(0,39)
+masses = range(mass_id_down, mass_id_down + n_mass_id)
 #masses = [19]
 T='/data1/emanuele/wmass/TREES_1LEP_53X_V3_WSKIM_V7/'
 if 'pccmsrm29' in os.environ['HOSTNAME']: T = T.replace('/data1/emanuele/wmass','/u2/emanuele')
@@ -14,13 +22,13 @@ elif 'lxplus' in os.environ['HOSTNAME']: T = T.replace('/data1/emanuele/wmass','
 elif 'cmsrm-an' in os.environ['HOSTNAME']: T = T.replace('/data1/emanuele/wmass','/t3/users/dimarcoe/')
 print "used trees from: ",T
 J=4
-#BASECONFIG="wmass_e"
-BASECONFIG="."
+BASECONFIG="wmass_e"
+#BASECONFIG=""
 MCA=BASECONFIG+'/mca-53X-wenu.txt'
 CUTFILE=BASECONFIG+'/wenu.txt'
 SYSTFILE=BASECONFIG+'/systsEnv.txt'
 #VAR="mt_lu_cart(LepCorr1_pt,LepGood1_phi,w_ux,w_uy) 90,30,120"
-VAR="LepCorr1_pt 40,30,50"
+VAR="LepCorr1_pt 36,32,50"
 NPDFSYSTS=53 # for CT10
 
 def writePdfSystsToMCA(sample,syst,dataset,xsec,vec_weight,filename):
@@ -68,7 +76,7 @@ OPTIONS=" -P "+T+" --s2v -j "+str(J)+" -l 19.7 -f --obj tree "+FASTTEST
 if not os.path.exists(outdir): os.makedirs(outdir)
 OPTIONS+=" -F mjvars/t '{P}/friends/evVarFriend_{cname}.root' --FMC sf/t '{P}/friends/sfFriend_{cname}.root' --FMC kinvars/t '{P}/friends/kinVarFriend_{cname}.root' "
 
-print "Mass IDs that will be done: ",masses," (19 is the central one)"
+print "Mass IDs that will be done: ",masses," (",mass_id_central," is the central one)"
 mass_offs = 0
 
 FITRANGE=" -A alwaystrue fitrange '%s>%s && %s<%s' " % (fitvar,x_range[0],fitvar,x_range[1])
@@ -80,27 +88,21 @@ if options.queue:
                 queue = options.queue, dir = os.getcwd(), cmssw = os.environ['CMSSW_BASE'], self=sys.argv[0]
             )
 
-<<<<<<< HEAD
-etaBins=options.etaBins if options.etaBins!=[] else ['0','5']
-if options.etaBinEdges:
-    # print "bins: " + str(etaBins)
-    etaBins = [binEdge for binEdge in options.etaBinEdges.split(',')]
-    # print "bins: " + str(etaBins)
-    # quit()
-
-for ieta in range(len(etaBins)-1):
-    subdir = "eta_"+str(ieta) if (options.etaBins!=[] or options.etaBinEdges) else 'etaIncl'
-=======
 etaBins=[]
+isEtaIncl = True
 if len(options.etaBins):
     for eb0 in options.etaBins:
         [etaBins.append(eb) for eb in eb0.split(",")]
-else: etaBins=['0','5']
+    isEtaIncl = False
+elif len(options.etaBinEdges):
+    etaBins = [binEdge for binEdge in options.etaBinEdges.split(",")]
+    isEtaIncl = False
+else: 
+    etaBins=['0','5']
 print "Categories in lepton eta = ",etaBins
 
 for ieta in range(len(etaBins)-1):
-    subdir = ("eta_%.1f_%.1f" % (float(etaBins[ieta]),float(etaBins[ieta+1]))).replace(".","") if len(options.etaBins) else 'etaIncl'
->>>>>>> cmg-emanuele/wmass_53X_EPS17
+    subdir = ("eta_%.1f_%.1f" % (float(etaBins[ieta]),float(etaBins[ieta+1]))).replace(".","p") if not isEtaIncl else 'etaIncl'
     etacut=" -A alwaystrue eta%d 'abs(LepGood1_eta)>%s && abs(LepGood1_eta)<%s' " % (ieta,etaBins[ieta],etaBins[ieta+1])
     myout = outdir + "/" + subdir
     if not os.path.exists(myout): os.mkdir(myout)
