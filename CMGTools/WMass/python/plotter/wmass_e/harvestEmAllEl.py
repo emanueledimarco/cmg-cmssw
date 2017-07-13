@@ -19,7 +19,7 @@ def harvestEm(subdir, mwrange, charge='both'):
     # We extracted this part of the datacard name into the channel variable above,
     # so can just copy it and override the specific bin name that was in all the cards
     cmb.ForEachObj(lambda obj: obj.set_bin(obj.channel()))
-
+ 
     # We'll have three copies of the observation, one for each mass point.
     # Filter all but one copy.
     #cmb.FilterObs(lambda obj: obj.mass() != '15')
@@ -27,7 +27,6 @@ def harvestEm(subdir, mwrange, charge='both'):
     
     # Create workspace to hold the morphing pdfs and the mass
     w = ROOT.RooWorkspace('morph', 'morph')
-    print mwrange
     mass = w.factory('mw[{mwrange}]'.format(mwrange=mwrange))
     
     # BuildRooMorphing will dump a load of debug plots here
@@ -76,108 +75,118 @@ mwrange='%d,%d' % (mass_id_down,mass_id_up)
 npoints = n_mass_id
 central = mass_id_central
 
-runHarvest = True
+runHarvest = False
 runBatch   = False
 justHadd   = False
-justHarvest = True
+combineCards = False
+runFit = True
 
-charges = ['both']#['neg', 'pos']
+input_dcs_alleta = ""
+workspaces = []
+for isub, subdir in enumerate(subdirs):
+    if subdir == subdirs[0]: continue
+    if 'wenu_cards_morphed' in subdir: continue
+    name = subdir.split('/')[-1]
+    if not 'eta_' in name: continue
 
-for charge in charges:
+    print '--------------------------------------------------------------------'
+    print '- running for {mode} -----------------------------------------------'.format(mode=name)
+    print '- in subdirectory {subdir} -----------------------------------------'.format(subdir=subdir)
+    print '--------------------------------------------------------------------'
+    #if name == 'full_3d': continue
 
-    for isub, subdir in enumerate(subdirs):
-        if subdir == subdirs[0]: continue
-        if 'wenu_cards_morphed' in subdir: continue
-        name = subdir.split('/')[-1]
-        if not 'eta_' in name: continue
-    
-        if justHadd:
-            print 'hadding {name}'.format(name=name)
-            print '-------------------------------------------------------'
-            os.system('hadd higgsCombine{date}_{name}_noPDFUncertainty.POINTSFULL.MultiDimFit.mH120.root higgsCombine{date}_{name}_noPDFUncertainty.POINTS.*.MultiDimFit.mH120.root'.format(date=date, name=name) )
-            os.system('hadd higgsCombine{date}_{name}.POINTSFULL.MultiDimFit.mH120.root higgsCombine{date}_{name}.POINTS.*.MultiDimFit.mH120.root'.format(date=date, name=name) )
-            continue
-    
-        print '--------------------------------------------------------------------'
-        print '- running for {mode} -----------------------------------------------'.format(mode=name)
-        print '- in subdirectory {subdir} -----------------------------------------'.format(subdir=subdir)
-        print '--------------------------------------------------------------------'
-        #if name == 'full_3d': continue
-    
-        if runHarvest: 
-            ## run the combine harvester which combines all the datacards etc.
-            harvestEm(subdir, mwrange, charge)
-            ## running combineCards to make the combined plus+minus datacard
+    if runHarvest: 
+        ## run the combine harvester which combines all the datacards etc.
+        harvest(subdir,mwrange)
 
-            if charge == 'both':
-                dcs = '{subdir}/wenu_cards_morphed_{charge}/*.txt '.format(subdir=subdir,charge=charge)
-                target_dc = '{subdir}/wenu_cards_morphed_{charge}/morphed_datacard_channel.txt'.format(subdir=subdir,charge=charge)
-                if os.path.isfile(target_dc):
-                    print 'removing existing combined datacard first!'
-                    os.system('rm {dc}'.format(dc=target_dc) )
-            #elif charge == 'plus':
-            #    dcs = '{subdir}/wenu_cards_morphed_{charge}/plus*.txt  '.format(subdir=subdir,charge=charge)
-            #    target_dc = '{subdir}/wenu_cards_morphed_{charge}/morphed_datacard_plus.txt'.format(subdir=subdir,charge=charge)
-            #elif charge == 'minus':
-            #    dcs = '{subdir}/wenu_cards_morphed_{charge}/minus*.txt '.format(subdir=subdir,charge=charge)
-            #    target_dc = '{subdir}/wenu_cards_morphed_{charge}/morphed_datacard_minus.txt'.format(subdir=subdir,charge=charge)
+    target_dc = '{subdir}/wenu_cards_morphed_both/morphed_datacard_channel.txt'.format(subdir=subdir)
+    target_ws = target_dc.replace('txt','root')
+    workspaces.append(target_ws)
 
-            print 'running combineCards.py'
-            combineCardsCmd = 'combineCards.py {dcs} >& {target_dc}'.format(dcs=dcs, target_dc=target_dc)
-            print combineCardsCmd
-            ## run combineCards and make the workspace
-            os.system(combineCardsCmd )
-            print 'running text2workspace'
-            t2wCmd = 'text2workspace.py {target_dc} '.format(subdir=subdir, target_dc=target_dc)
-            print t2wCmd
-            os.system(t2wCmd)
-            target_ws = target_dc.replace('txt','root')
+    if combineCards:
+        ## running combineCards to make the combined plus+minus datacard
+        if os.path.isfile(target_dc):
+            print 'removing existing combined datacard first!'
+            os.system('rm {dc}'.format(dc=target_dc) )
+        dcs = os.listdir(subdir+"/wenu_cards_morphed_both/")
+        input_dcs=" ".join(["%s=%s" % (os.path.splitext(dc)[0],subdir+"/wenu_cards_morphed_both/"+dc) for dc in dcs if "txt" in dc])
+        input_dcs_alleta += " "+input_dcs
 
-            if justHarvest: exit(0)
-    
+        print 'running combineCards.py'
+        combineCardsCmd = 'combineCards.py {dcs} >& {target_dc}'.format(dcs=input_dcs, target_dc=target_dc)
+        print combineCardsCmd
+        ## run combineCards and make the workspace
+        os.system(combineCardsCmd )
+        print 'running text2workspace'
+        t2wCmd = 'text2workspace.py {target_dc} '.format(subdir=subdir, target_dc=target_dc)
+        print t2wCmd
+        os.system(t2wCmd)
+
+comb_dir = card_dir+'/comb'
+if not os.path.exists(comb_dir): os.mkdir(comb_dir)
+comb_dc = comb_dir+"/morphed_datacard_comb.txt"
+comb_ws = comb_dc.replace('txt','root')
+workspaces.append(comb_ws)
+        
+if combineCards:
+    if os.path.isfile(comb_dc):
+        print 'removing existing combined datacard first!'
+        os.system('rm {dc}'.format(dc=comb_dc) )
+
+    print 'running combineCards.py'
+    combineCardsCmd = 'combineCards.py {dcs} >& {target_dc}'.format(dcs=input_dcs_alleta, target_dc=comb_dc)
+    print combineCardsCmd
+    ## run combineCards and make the workspace
+    os.system(combineCardsCmd)
+    print 'running text2workspace'
+    os.system('text2workspace.py %s' % comb_dc)
+
+if runFit:
+    for ws in workspaces:
+        print "===> RUN FIT FOR WORKSPACE: ",ws
         ## constructing the command
         combine_base  = 'combine -t -1 -M MultiDimFit --setPhysicsModelParameters mw={central},r=1 --setPhysicsModelParameterRanges mw={mwrange} '.format(central=central,mwrange=mwrange)
-        combine_base += ' --redefineSignalPOIs=mw --algo grid --points {npoints} {target_ws} '.format(npoints=npoints, subdir=subdir, target_ws=target_ws)
-    
+        combine_base += ' --redefineSignalPOIs=mw --algo grid --points {npoints} {target_ws} '.format(npoints=npoints, target_ws=ws)
+        
         saveNuisances = ''
         saveNuisances += ' --saveSpecifiedNuis {vs} '.format(vs=','.join('CMS_We_pdf'+str(i) for i in range(1,27)))
-    
+        
         run_combine_pdfUnc = combine_base + ' -n {date}_{name} {sn} '.format(date=date,name=name,sn=saveNuisances) 
         run_combine_noPdf  = combine_base + ' -n {date}_{name}_noPDFUncertainty --freezeNuisanceGroups pdfUncertainties '.format(date=date,name=name)
-    
+        
         if runBatch:
             run_combine_pdfUnc += ' --job-mode lxbatch --split-points 10 --sub-opts="-q 8nh" --task-name {name}                  '.format(name=name)
             run_combine_noPdf  += ' --job-mode lxbatch --split-points 10 --sub-opts="-q 8nh" --task-name {name}_noPDFUncertainty '.format(name=name)
             run_combine_pdfUnc  = 'combineTool.py ' + ' '.join(run_combine_pdfUnc.split()[1:])
             run_combine_noPdf   = 'combineTool.py ' + ' '.join(run_combine_noPdf .split()[1:])
-    
-    
+        
+        
         ## running combine once with the systematics and once without
         print '-- running combine command ------------------------------'
         print '---     with uncertainties: -----------------------------'
         print run_combine_pdfUnc
-    
+        
         os.system(run_combine_pdfUnc)
-    
+        
         print '---     without uncertainties: --------------------------'
         print run_combine_noPdf
         os.system(run_combine_noPdf )
-    
-        impactBase = 'combineTool.py -M Impacts -n {date}_{name} -d {target_ws} -m {mass} '.format(subdir=subdir,mass=name[-1],date=date,name=name, target_ws=target_ws)
+        
+        impactBase = 'combineTool.py -M Impacts -n {date}_{name} -d {target_ws} -m {mass} '.format(mass=name[-1],date=date,name=name, target_ws=ws)
         impactBase += ' --setPhysicsModelParameters mw={central},r=1  --redefineSignalPOIs=mw --setPhysicsModelParameterRanges mw={mwrange} -t -1 '.format(central=central,mwrange=mwrange)
         impactInitial = impactBase+'  --robustFit 1 --doInitialFit '
         impactFits    = impactBase+'  --robustFit 1 --doFits '
-        impactJSON    = impactBase+'  -o impacts_{name}_{charge}.json '.format(name=name, charge=charge)
-        impactPlot    = 'plotImpacts.py -i impacts_{name}_{charge}.json -o impacts_{name}_{charge} --transparent'.format(name=name,charge=charge)
-    
+        impactJSON    = impactBase+'  -o impacts_{name}.json '.format(name=name)
+        impactPlot    = 'plotImpacts.py -i impacts_{name}.json -o impacts_{name} --transparent'.format(name=name)
+        
         os.system(impactInitial)
         os.system(impactFits   )
         os.system(impactJSON   )
         os.system(impactPlot   )
 
-## combineTool.py -M Impacts -d morphed_datacard_plusminus.root -m 999 --setPhysicsModelParameters mw=15,r=1  --redefineSignalPOIs=mw  --setPhysicsModelParameterRanges mw=0,30 -t -1 --robustFit 1 --doInitialFit
-## combineTool.py -M Impacts -d morphed_datacard_plusminus.root -m 999 --setPhysicsModelParameters mw=15,r=1  --redefineSignalPOIs=mw  --setPhysicsModelParameterRanges mw=0,30 -t -1 --robustFit 1 --doFits
-## combineTool.py -M Impacts -d morphed_datacard_plusminus.root -m 999 --setPhysicsModelParameters mw=15,r=1  --redefineSignalPOIs=mw  --setPhysicsModelParameterRanges mw=0,30 -t -1 -o impacts.json
+## combineTool.py -M Impacts -d morphed_datacard_plusminus.root -m 999 --setPhysicsModelParameters mw=19,r=1  --redefineSignalPOIs=mw  --setPhysicsModelParameterRanges mw=0,30 -t -1 --robustFit 1 --doInitialFit
+## combineTool.py -M Impacts -d morphed_datacard_plusminus.root -m 999 --setPhysicsModelParameters mw=19,r=1  --redefineSignalPOIs=mw  --setPhysicsModelParameterRanges mw=0,30 -t -1 --robustFit 1 --doFits
+## combineTool.py -M Impacts -d morphed_datacard_plusminus.root -m 999 --setPhysicsModelParameters mw=19,r=1  --redefineSignalPOIs=mw  --setPhysicsModelParameterRanges mw=0,30 -t -1 -o impacts.json
 ## plotImpacts.py -i impacts.json -o impacts
 
 
