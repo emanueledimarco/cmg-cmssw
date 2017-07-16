@@ -4,8 +4,8 @@
 
 #mass_id_down = 0
 #mass_id_up = 38
-mass_id_down = 14
-mass_id_up = 24
+mass_id_down = 7
+mass_id_up = 31
 n_mass_id = 1 + int(mass_id_up) - int(mass_id_down)  # odd number, because there are the central value for nominal mass and its up and down variations
 mass_id_central = int((int(mass_id_up) + int(mass_id_down))/2.)  # basically it is the mean value of the segment going from mass_id_down to mass_id_up 
 

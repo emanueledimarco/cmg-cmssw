@@ -27,8 +27,9 @@ BASECONFIG="wmass_e"
 MCA=BASECONFIG+'/mca-53X-wenu.txt'
 CUTFILE=BASECONFIG+'/wenu.txt'
 SYSTFILE=BASECONFIG+'/systsEnv.txt'
+# moved below option parser to allow their setting with options
 #VAR="mt_lu_cart(LepCorr1_pt,LepGood1_phi,w_ux,w_uy) 90,30,120"
-VAR="LepCorr1_pt 36,32,50"
+#VAR="LepCorr1_pt 28,36,50"
 NPDFSYSTS=53 # for CT10
 
 def writePdfSystsToMCA(sample,syst,dataset,xsec,vec_weight,filename):
@@ -49,9 +50,25 @@ from optparse import OptionParser
 parser = OptionParser(usage="%prog testname ")
 parser.add_option("--etaBins", dest="etaBins", action="append", default=[], help="Give a list of lepton eta bins to make fit categories")
 parser.add_option("--etaBinEdges", dest="etaBinEdges", type="string", default=None, help="Give a comma separated list of lepton eta bin edges to make fit categories")
+parser.add_option("--fitVar", dest="fitVar", type="string", default="pt", help="Pass the name of variable to fit (pt or mt, default is pt)")
+parser.add_option("--fitRange", dest="fitRange", type="string", default="", help="Pass the number of bins and range to be used for the fit, e.g '40,30,50'. Arguments are separated by commas with no spaces (use only integer numbers please")
 parser.add_option("-q", "--queue",    dest="queue",     type="string", default=None, help="Run jobs on lxbatch instead of locally");
 parser.add_option("--dry-run", dest="dryRun",    action="store_true", default=False, help="Do not run the job, only print the command");
 (options, args) = parser.parse_args()
+
+if options.fitVar == "mt":
+    if len(options.fitRange)>0:
+        VAR="mt_lu_cart(LepCorr1_pt,LepGood1_phi,w_ux,w_uy) " + options.fitRange
+    else:
+        VAR="mt_lu_cart(LepCorr1_pt,LepGood1_phi,w_ux,w_uy) 90,30,120"
+elif options.fitVar == "pt":
+    if len(options.fitRange)>0:
+        VAR="LepCorr1_pt " + options.fitRange
+    else:
+        VAR="LepCorr1_pt 40,30,50"
+else:
+    print "options.fitVar = '%s': not a valid option (use pt or mt)" % options.fitVar
+print str(VAR)
 
 if not os.path.exists("cards/"):
     os.makedirs("cards/")
