@@ -201,8 +201,8 @@ class KinematicVars:
             ret["phi_w"] = self.phi_weight(phi_cs,abs(Z.y()))
             ptOverM = Z.pt()/Z.mll()*91.1876
             ret["zpt_w"] = self.zpt_weight(ptOverM)
-            ret["zpt_w_up"] = ret["zpt_w"]*(2-self.ZtoW(ptOverM))
-            ret["zpt_w_dn"] = ret["zpt_w"]*self.ZtoW(ptOverM)
+            ret["zpt_w_up"] = self.ZtoW(ptOverM)
+            ret["zpt_w_dn"] = self.ZtoW(ptOverM)
         else:
             ret["aipi_w"] = ret["cth_w"] = ret["phi_w"] = ret["zpt_w"] = 1.0
 
