@@ -66,7 +66,7 @@ def harvestEm(subdir, mwrange, charge='both'):
 date = datetime.date.today().isoformat()
 date+='_charges'
 
-card_dir = 'cards/test_5massPoints/'
+card_dir = 'cards/lepPtOptim_12massVar_ptLow30/'
 subdirs = [x[0] for x in os.walk(card_dir)]
 
 #mwrange='0,30'
