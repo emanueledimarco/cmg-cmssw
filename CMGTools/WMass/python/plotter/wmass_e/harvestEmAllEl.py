@@ -1,14 +1,14 @@
 import CombineHarvester.CombineTools.ch as ch
 import CombineHarvester.CombinePdfs.morphing as morphing
 import ROOT
-import glob,datetime,os,re
+import sys, glob,datetime,os,re
 
 # import some parameters from wmass_parameters.py, they are also used by other scripts
 from wmass_parameters import *
 
 if len(sys.argv) < 2:
     print "----- WARNING -----"
-    print "Too few arguments: need at list cards folder name. E.g.: cards/<whatever_you_chose>/"
+    print "Too few arguments: need at list cards folder name. E.g.: cards/<whatever_you_chose>/ (only the part inside brackets)"
     print "-------------------"
     quit()
 
@@ -167,8 +167,8 @@ parser = OptionParser(usage="%prog testname ")
 
 
 
-#card_dir = '/afs/cern.ch/work/m/mciprian/w_mass_analysis/CMSSW_5_3_22_patch1/src/CMGTools/WMass/python/plotter/cards/lepPtOptim_12massVar_ptLow30/'
-card_dir = '/afs/cern.ch/work/m/mciprian/w_mass_analysis/CMSSW_5_3_22_patch1/src/CMGTools/WMass/python/plotter/cards/' + str(args[0]) + '/'
+#card_dir = '/afs/cern.ch/work/m/mciprian/w_mass_analysis/CMSSW_5_3_22_patch1/src/CMGTools/WMass/python/plotter/cards/' + str(args[0]) + '/'
+card_dir = 'cards/' + str(args[0]) + '/'
 subdirs = [x[0] for x in os.walk(card_dir)]
 
 #mwrange='0,30'
@@ -177,11 +177,11 @@ mwrange='%d,%d' % (mass_id_down,mass_id_up)
 npoints = n_mass_id
 central = mass_id_central
 
-runHarvest = False
+runHarvest = True
 runBatch   = False
 justHadd   = False
 combineCards = False
-runFit = True
+runFit = False
 
 input_dcs_alleta = ""
 workspaces = []
