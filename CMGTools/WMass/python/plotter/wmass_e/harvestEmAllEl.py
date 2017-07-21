@@ -1,25 +1,34 @@
 import CombineHarvester.CombineTools.ch as ch
 import CombineHarvester.CombinePdfs.morphing as morphing
 import ROOT
-import glob,datetime,os,re
+import sys, glob,datetime,os,re
+# import some parameters from wmass_parameters.py, they are also used by other scripts
+from wmass_parameters import *
+
+if len(sys.argv) < 2:
+    print "----- WARNING -----"
+    print "Too few arguments: need at list cards folder name. E.g.: cards/<whatever_you_chose>/ (only the part inside brackets)"
+    print "-------------------"
+    quit()
 
 class WMassFitMaker:
     def __init__(self,mwrange,mwcentral,npoints,bindir,options=None):
         self.mwrange = mwrange
-        self.mwcentral = mwcentral 
-        self.npoints
+        self.mwcentral = mwcentral
+        self.npoints = npoints
         self.bindir = bindir
         self.options = options
 
-    def harvest(channel='wenu',charge='both'):
+
+    def harvestEm(channel='wenu',charge='both'):
         cmb = ch.CombineHarvester()
-        
+
         # Read all the cards.
         # CH stores metadata about each object (Observation, Process, Systematic),
         # this is extracted from the card names with some regex
-        for card in glob.glob(self.subdir+('/%s_mass*.txt' % channel)):
+        for card in glob.glob(self.bindir+('/%s_mass*.txt' % channel)):
             cmb.QuickParseDatacard(card, """%s_mass(?<MASS>\d+)_$CHANNEL.card.txt""" % channel)
-        
+
         # Need a unqiue bin name for each plus/minus,pt and eta combination
         # We extracted this part of the datacard name into the channel variable above,
         # so can just copy it and override the specific bin name that was in all the cards
@@ -48,7 +57,7 @@ class WMassFitMaker:
         # (this relies on us knowing that BuildRooMorphing will name the pdfs in a particular way)
         cmb.AddWorkspace(w, True)
         cmb.cp().process(['W']).ExtractPdfs(cmb, 'morph', '$BIN_$PROCESS_morph', '')
-        
+
         # Adjust the rateParams a bit - we currently have three for each bin (one for each mass),
         # but we only want one. Easiest to drop the existing ones completely and create new ones
         cmb.syst_type(['rateParam'], False)
@@ -149,18 +158,28 @@ class WMassFitMaker:
             # os.system(impactPlot   )
 
 
-card_dir = 'cards/cards_100717/'
+
+from optparse import OptionParser
+parser = OptionParser(usage="%prog testname ")
+(options, args) = parser.parse_args()
+
+
+
+#card_dir = '/afs/cern.ch/work/m/mciprian/w_mass_analysis/CMSSW_5_3_22_patch1/src/CMGTools/WMass/python/plotter/cards/' + str(args[0]) + '/'
+card_dir = 'cards/' + str(args[0]) + '/'
 subdirs = [x[0] for x in os.walk(card_dir)]
 
-mwrange='0,38'
-npoints = 39
-central = 19
+#mwrange='0,30'
+# values from wmass_parameters.py
+mwrange='%d,%d' % (mass_id_down,mass_id_up)
+npoints = n_mass_id
+central = mass_id_central
 
-runHarvest = False
+runHarvest = True
 runBatch   = False
 justHadd   = False
 combineCards = False
-runFit = True
+runFit = False
 
 input_dcs_alleta = ""
 workspaces = []
@@ -174,7 +193,6 @@ for isub, subdir in enumerate(subdirs):
     print '- running for {mode} -----------------------------------------------'.format(mode=name)
     print '- in subdirectory {subdir} -----------------------------------------'.format(subdir=subdir)
     print '--------------------------------------------------------------------'
-
     fit = WMassFitMaker(mwrange,central,npoints,subdir)
 
     if runHarvest: 
@@ -193,6 +211,7 @@ for isub, subdir in enumerate(subdirs):
 
 comb_dir = card_dir+'/comb'
 if not os.path.exists(comb_dir): os.mkdir(comb_dir)
+    os.mkdir(comb_dir)
 comb_dc = comb_dir+"/morphed_datacard_comb.txt"
 comb_ws = comb_dc.replace('txt','root')
 workspaces.append(comb_ws)
@@ -208,15 +227,17 @@ if runFit:
         ## constructing the command
         combine_base  = 'combine -t -1 -M MultiDimFit --setPhysicsModelParameters mw={central},r=1 --setPhysicsModelParameterRanges mw={mwrange} '.format(central=central,mwrange=mwrange)
         combine_base += ' --redefineSignalPOIs=mw --algo grid --points {npoints} {target_ws} '.format(npoints=npoints, target_ws=ws)
-        
+
         saveNuisances = ''
         saveNuisances += ' --saveSpecifiedNuis {vs} '.format(vs=','.join('CMS_We_pdf'+str(i) for i in range(1,27)))
-        
-        run_combine_allUnc = combine_base + ' -n {date}_{name} {sn} '.format(date=date,name=name,sn=saveNuisances) 
+
+        date = datetime.date.today().isoformat()
+
+        run_combine_allUnc = combine_base + ' -n {date}_{name} {sn} '.format(date=date,name=name,sn=saveNuisances)
         run_combine_noPdf  = combine_base + ' -n {date}_{name}_noPDFUncertainty --freezeNuisanceGroups pdfUncertainties '.format(date=date,name=name)
         run_combine_noPtW  = combine_base + ' -n {date}_{name}_noPTWUncertainty --freezeNuisances CMS_W_ptw '.format(date=date,name=name)
         run_combine_noEScale  = combine_base + ' -n {date}_{name}_noEScaleUncertainty --freezeNuisances CMS_We_elescale '.format(date=date,name=name)
-        
+
         if runBatch:
             run_combine_allUnc += ' --job-mode lxbatch --split-points 10 --sub-opts="-q 8nh" --task-name {name}                  '.format(name=name)
             run_combine_noPdf  += ' --job-mode lxbatch --split-points 10 --sub-opts="-q 8nh" --task-name {name}_noPDFUncertainty '.format(name=name)
@@ -226,14 +247,14 @@ if runFit:
             run_combine_noPdf   = 'combineTool.py ' + ' '.join(run_combine_noPdf .split()[1:])
             run_combine_noPtW   = 'combineTool.py ' + ' '.join(run_combine_noPtW .split()[1:])
             run_combine_noEScale   = 'combineTool.py ' + ' '.join(run_combine_noEScale .split()[1:])
-        
-        
-        ## running combine once with the systematics and once without
+
+    
+        ## running combine once with the systematics and once without 
         print '-- running combine command ------------------------------'
         print '---     with uncertainties: -----------------------------'
-        print run_combine_allUnc        
+        print run_combine_allUnc
         os.system(run_combine_allUnc)
-        
+
         print '---     without PDF uncertainties: --------------------------'
         print run_combine_noPdf
         os.system(run_combine_noPdf )
@@ -245,18 +266,18 @@ if runFit:
         print '---     without electron energy scale uncertainties: --------------------------'
         print run_combine_noEScale
         os.system(run_combine_noEScale )
-        
+
         impactBase = 'combineTool.py -M Impacts -n {date}_eta_{name} -d {target_ws} -m {mass}'.format(mass=m,date=date,name=name, target_ws=ws)
         impactBase += ' --setPhysicsModelParameters mw={central},r=1  --redefineSignalPOIs=mw --setPhysicsModelParameterRanges mw={mwrange} -t -1 '.format(central=central,mwrange=mwrange)
         impactInitial = impactBase+'  --robustFit 1 --doInitialFit '
         impactFits    = impactBase+'  --robustFit 1 --doFits '
         impactJSON    = impactBase+'  -o impacts_eta_{name}.json '.format(name=name)
         impactPlot    = 'plotImpacts.py -i impacts_eta_{name}.json -o impacts_eta_{name} --transparent'.format(name=name)
-        
+
         # os.system(impactInitial)
         # os.system(impactFits   )
         # os.system(impactJSON   )
-        # os.system(impactPlot   )
+        # os.system(impactPlot   )    
 
 
 
