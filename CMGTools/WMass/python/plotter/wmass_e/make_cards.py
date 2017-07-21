@@ -2,9 +2,19 @@
 from shutil import copyfile
 import re, sys, os, os.path, subprocess
 
+# import some parameters from wmass_parameters.py, they are also used by other scripts
+from wmass_parameters import *
+
+if len(sys.argv) < 2:
+    print "----- WARNING -----"
+    print "Too few arguments: need at list output folder name."
+    print "-------------------"
+    quit()
+
+
 FASTTEST=''
 #FASTTEST='--max-entries 1000 '
-masses = range(0,39)
+masses = range(mass_id_down, mass_id_down + n_mass_id)
 #masses = [19]
 T='/data1/emanuele/wmass/TREES_1LEP_53X_V3_WSKIM_V7/'
 if 'pccmsrm29' in os.environ['HOSTNAME']: T = T.replace('/data1/emanuele/wmass','/u2/emanuele')
@@ -13,11 +23,13 @@ elif 'cmsrm-an' in os.environ['HOSTNAME']: T = T.replace('/data1/emanuele/wmass'
 print "used trees from: ",T
 J=4
 BASECONFIG="wmass_e"
+#BASECONFIG=""
 MCA=BASECONFIG+'/mca-53X-wenu.txt'
 CUTFILE=BASECONFIG+'/wenu.txt'
 SYSTFILE=BASECONFIG+'/systsEnv.txt'
+# moved below option parser to allow their setting with options
 #VAR="mt_lu_cart(LepCorr1_pt,LepGood1_phi,w_ux,w_uy) 90,30,120"
-VAR="LepCorr1_pt 40,30,50"
+#VAR="LepCorr1_pt 28,36,50"
 NPDFSYSTS=53 # for CT10
 
 def writePdfSystsToMCA(sample,syst,dataset,xsec,vec_weight,filename):
@@ -37,10 +49,28 @@ def writePdfSystsToSystFile(sample,syst,channel,filename):
 from optparse import OptionParser
 parser = OptionParser(usage="%prog testname ")
 parser.add_option("--etaBins", dest="etaBins", action="append", default=['0','0.45','0.8','1.15','1.479','2.0','2.5'], help="Give a list of lepton eta bins to make fit categories")
+parser.add_option("--fitVar", dest="fitVar", type="string", default="pt", help="Pass the name of variable to fit (pt or mt, default is pt)")
+parser.add_option("--fitRange", dest="fitRange", type="string", default="", help="Pass the number of bins and range to be used for the fit, e.g '40,30,50'. Arguments are separated by commas with no spaces (use only integer numbers please")
 parser.add_option("-q", "--queue",    dest="queue",     type="string", default=None, help="Run jobs on lxbatch instead of locally");
 parser.add_option("--dry-run", dest="dryRun",    action="store_true", default=False, help="Do not run the job, only print the command");
 (options, args) = parser.parse_args()
 
+if options.fitVar == "mt":
+    if len(options.fitRange)>0:
+        VAR="mt_lu_cart(LepCorr1_pt,LepGood1_phi,w_ux,w_uy) " + options.fitRange
+    else:
+        VAR="mt_lu_cart(LepCorr1_pt,LepGood1_phi,w_ux,w_uy) 90,30,120"
+elif options.fitVar == "pt":
+    if len(options.fitRange)>0:
+        VAR="LepCorr1_pt " + options.fitRange
+    else:
+        VAR="LepCorr1_pt 40,30,50"
+else:
+    print "options.fitVar = '%s': not a valid option (use pt or mt)" % options.fitVar
+print str(VAR)
+
+if not os.path.exists("cards/"):
+    os.makedirs("cards/")
 outdir="cards/"+args[0]
 
 # write systematic variations to be considered in the MCA file
@@ -62,7 +92,7 @@ OPTIONS=" -P "+T+" --s2v -j "+str(J)+" -l 19.7 -f --obj tree "+FASTTEST
 if not os.path.exists(outdir): os.makedirs(outdir)
 OPTIONS+=" -F mjvars/t '{P}/friends/evVarFriend_{cname}.root' --FMC sf/t '{P}/friends/sfFriend_{cname}.root' --FMC kinvars/t '{P}/friends/kinVarFriend_{cname}.root' "
 
-print "Mass IDs that will be done: ",masses," (19 is the central one)"
+print "Mass IDs that will be done: ",masses," (",mass_id_central," is the central one)"
 mass_offs = 0
 
 FITRANGE=" -A alwaystrue fitrange '%s>%s && %s<%s' " % (fitvar,x_range[0],fitvar,x_range[1])
@@ -75,14 +105,16 @@ if options.queue:
             )
 
 etaBins=[]
+isEtaIncl = True
 if len(options.etaBins):
-    for eb0 in options.etaBins:
-        [etaBins.append(eb) for eb in eb0.split(",")]
-else: etaBins=['0','5']
+    etaBins = [binEdge for binEdge in options.etaBins.split(",")]
+    isEtaIncl = False
+else: 
+    etaBins=['0','5']
 print "Categories in lepton eta = ",etaBins
 
 for ieta in range(len(etaBins)-1):
-    subdir = ("eta_%.1f_%.1f" % (float(etaBins[ieta]),float(etaBins[ieta+1]))).replace(".","") if len(options.etaBins) else 'etaIncl'
+    subdir = ("eta_%.1f_%.1f" % (float(etaBins[ieta]),float(etaBins[ieta+1]))).replace(".","p") if not isEtaIncl else 'etaIncl'
     etacut=" -A alwaystrue eta%d 'abs(LepGood1_eta)>%s && abs(LepGood1_eta)<%s' " % (ieta,etaBins[ieta],etaBins[ieta+1])
     myout = outdir + "/" + subdir
     if not os.path.exists(myout): os.mkdir(myout)
