@@ -36,7 +36,7 @@ def writePdfSystsToSystFile(sample,syst,channel,filename):
         
 from optparse import OptionParser
 parser = OptionParser(usage="%prog testname ")
-parser.add_option("--etaBins", dest="etaBins", action="append", default=[], help="Give a list of lepton eta bins to make fit categories")
+parser.add_option("--etaBins", dest="etaBins", action="append", default=['0','0.45','0.8','1.15','1.479','2.0','2.5'], help="Give a list of lepton eta bins to make fit categories")
 parser.add_option("-q", "--queue",    dest="queue",     type="string", default=None, help="Run jobs on lxbatch instead of locally");
 parser.add_option("--dry-run", dest="dryRun",    action="store_true", default=False, help="Do not run the job, only print the command");
 (options, args) = parser.parse_args()
