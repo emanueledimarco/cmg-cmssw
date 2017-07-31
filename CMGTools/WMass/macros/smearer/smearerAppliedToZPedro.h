@@ -23,7 +23,7 @@ class smearerAppliedToZPedro {
   
   // Declaration of leaf types
   Int_t           nw;
-  Float_t         w[10];   //[nw]
+  Float_t         w[300];   //[nw]
   Int_t           nl;
   Int_t           pid[10];   //[nl]
   Int_t           charge[10];   //[nl]
@@ -94,11 +94,17 @@ smearerAppliedToZPedro::smearerAppliedToZPedro(TTree *tree) : fChain(0)
   // if parameter tree is not specified (or zero), connect the file
   // used to generate this class and read the Tree.
   if (tree == 0) {
-    TFile *f = (TFile*)gROOT->GetListOfFiles()->FindObject("/cmsrm/pc28_2/crovelli/data/Wmass/Zj_nominal.root");
+    //TFile *f = (TFile*)gROOT->GetListOfFiles()->FindObject("DYToMuMu_M_50_TuneAZ_8TeV_ATLAS.root");
+    //TFile *f = (TFile*)gROOT->GetListOfFiles()->FindObject("ZJ_central.root");
+    TFile *f = (TFile*)gROOT->GetListOfFiles()->FindObject("ZJ_ptsqmin4.root");
     if (!f || !f->IsOpen()) {
-      f = new TFile("/cmsrm/pc28_2/crovelli/data/Wmass/Zj_nominal.root");
+      //f = new TFile("DYToMuMu_M_50_TuneAZ_8TeV_ATLAS.root");
+      //f = new TFile("ZJ_central.root");
+      f = new TFile("ZJ_ptsqmin4.root");
     }
-    TDirectory * dir = (TDirectory*)f->Get("/cmsrm/pc28_2/crovelli/data/Wmass/Zj_nominal.root:/analysis");
+    //TDirectory * dir = (TDirectory*)f->Get("DYToMuMu_M_50_TuneAZ_8TeV_ATLAS.root:/analysis");
+    //TDirectory * dir = (TDirectory*)f->Get("ZJ_central.root:/analysis");
+    TDirectory * dir = (TDirectory*)f->Get("ZJ_ptsqmin4.root:/analysis");
     dir->GetObject("data",tree);
   }
   Init(tree);
