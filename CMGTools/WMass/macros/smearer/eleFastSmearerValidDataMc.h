@@ -496,11 +496,11 @@ eleFastSmearerValidDataMc::eleFastSmearerValidDataMc(TTree *tree) : fChain(0)
   // if parameter tree is not specified (or zero), connect the file
   // used to generate this class and read the Tree.
   if (tree == 0) {
-    //TFile *f = (TFile*)gROOT->GetListOfFiles()->FindObject("/cmsrm/pc29_2/emanuele/TREES_1LEP_53X_V2/DYJetsM50/treeProducerWMassEle/treeProducerWMassEle_tree.root");
-    TFile *f = (TFile*)gROOT->GetListOfFiles()->FindObject("/cmsrm/pc28_2/crovelli/data/Wmass/DoubleElectronABCD__1LEP_53X_V2.root");
+    TFile *f = (TFile*)gROOT->GetListOfFiles()->FindObject("/cmsrm/pc29_2/emanuele/TREES_1LEP_53X_V2/DYJetsM50/treeProducerWMassEle/treeProducerWMassEle_tree.root");
+    //TFile *f = (TFile*)gROOT->GetListOfFiles()->FindObject("/cmsrm/pc28_2/crovelli/data/Wmass/DoubleElectronABCD__1LEP_53X_V2.root");
     if (!f || !f->IsOpen()) {
-      //f = new TFile("/cmsrm/pc29_2/emanuele/TREES_1LEP_53X_V2/DYJetsM50/treeProducerWMassEle/treeProducerWMassEle_tree.root");
-      f = new TFile("/cmsrm/pc28_2/crovelli/data/Wmass/DoubleElectronABCD__1LEP_53X_V2.root");
+      f = new TFile("/cmsrm/pc29_2/emanuele/TREES_1LEP_53X_V2/DYJetsM50/treeProducerWMassEle/treeProducerWMassEle_tree.root");
+      //f = new TFile("/cmsrm/pc28_2/crovelli/data/Wmass/DoubleElectronABCD__1LEP_53X_V2.root");
     }
     f->GetObject("treeProducerWMassEle",tree);
     
