@@ -25,6 +25,12 @@ fourVectorType = NTupleObjectType("fourVector", variables = [
     NTupleVariable("p4",    lambda x : x, "TLorentzVector", default=ROOT.reco.Particle.LorentzVector(0.,0.,0.,0.), filler = lambda vector, obj: vector.SetPtEtaPhiM(obj.pt(), obj.eta(), obj.phi(), obj.mass())),
     #               ^^^^------- Note: p4 normally is not saved unless 'saveTLorentzVectors' is enabled in the tree producer
 ])
+lightFourVectorType = NTupleObjectType("lightFourVector", variables = [
+    NTupleVariable("pt",    lambda x : x.pt(), storageType="H"),
+    NTupleVariable("eta",   lambda x : x.eta(), storageType="H"),
+    NTupleVariable("phi",   lambda x : x.phi(), storageType="H"),
+    NTupleVariable("mass",  lambda x : x.mass(), storageType="H"),
+])
 tlorentzFourVectorType = NTupleObjectType("tlorentzFourVectorType", variables = [
     NTupleVariable("pt",    lambda x : x.Pt()),
     NTupleVariable("eta",   lambda x : x.Eta()),
@@ -239,7 +245,8 @@ metType = NTupleObjectType("met", baseObjectTypes = [ fourVectorType ], variable
 ## GENPARTICLE
 ##------------------------------------------  
 
-genParticleType = NTupleObjectType("genParticle", baseObjectTypes = [ particleType ], mcOnly=True, variables = [
+genParticleType = NTupleObjectType("genParticle", baseObjectTypes = [ lightFourVectorType ], mcOnly=True, variables = [
+    NTupleVariable("pdgId",   lambda x : x.pdgId(), int),
     NTupleVariable("charge",   lambda x : x.threeCharge()/3.0, float),
     NTupleVariable("status",   lambda x : x.status(),int),
     NTupleVariable("isPromptHard", lambda x : getattr(x,"promptHardFlag",0), int)
