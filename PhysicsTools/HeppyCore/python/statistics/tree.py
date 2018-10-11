@@ -114,7 +114,7 @@ class Tree(object):
                     value.ExpandCreateFast(0)
             
     def fill(self, varName, value, storageType="default" ):
-        if isinstance(value,float) and storageType=="H": value=np.float16(value)
+        if isinstance(value,float) and storageType=="H": value=numpy.float16(value)
         if isinstance(self.vars[varName], numpy.ndarray):
             self.vars[varName][0]=value
         else:
