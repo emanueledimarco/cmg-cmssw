@@ -249,7 +249,13 @@ genParticleType = NTupleObjectType("genParticle", baseObjectTypes = [ lightFourV
     NTupleVariable("pdgId",   lambda x : x.pdgId(), int),
     NTupleVariable("charge",   lambda x : x.threeCharge()/3.0, float),
     NTupleVariable("status",   lambda x : x.status(),int),
-    NTupleVariable("isPromptHard", lambda x : getattr(x,"promptHardFlag",0), int)
+    NTupleVariable("isDirectPromptTauDecayProductFinalState", lambda x : getattr(x, "_isDirectPromptTauDecayProductFinalState", 0), int ),
+    NTupleVariable("lastBeforeFSR"                          , lambda x : getattr(x, "_isLastCopyBeforeFSR"                    , 0), int ),
+    NTupleVariable("fromHardProcessBeforeFSR"               , lambda x : getattr(x, "_fromHardProcessBeforeFSR"               , 0), int ),
+    NTupleVariable("isPromptDecayed"                        , lambda x : getattr(x, "_isPromptDecayed"                        , 0), int ),
+    NTupleVariable("fromHardProcessFinalState"              , lambda x : getattr(x, "_fromHardProcessFinalState"              , 0), int ),
+    NTupleVariable("fromHardProcessDecayed"                 , lambda x : getattr(x, "_fromHardProcessDecayed"                 , 0), int ),
+    NTupleVariable("isPromptFinalState"                     , lambda x : getattr(x, "_isPromptFinalState"                     , 0), int )
 ])
 genParticleWithMotherId = NTupleObjectType("genParticleWithMotherId", baseObjectTypes = [ genParticleType ], mcOnly=True, variables = [
     NTupleVariable("motherId", lambda x : x.mother(0).pdgId() if x.mother(0) else 0, int, help="pdgId of the mother of the particle"),
