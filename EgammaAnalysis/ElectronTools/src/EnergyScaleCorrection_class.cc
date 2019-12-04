@@ -17,7 +17,6 @@
 //#define PEDANTIC_OUTPUT
 
 EnergyScaleCorrection_class::EnergyScaleCorrection_class(std::string correctionFileName, unsigned int genSeed):
-  doScale(false), doSmearings(false),
   smearingType_(ECALELF)
 {
   
@@ -53,8 +52,7 @@ float EnergyScaleCorrection_class::ScaleCorrection(unsigned int runNumber, bool 
 						   double R9Ele, double etaSCEle, double EtEle) const
 {
   float correction = 1;
-  if(doScale) correction *= getScaleOffset(runNumber, isEBEle, R9Ele, etaSCEle, EtEle);
-  
+  correction *= getScaleOffset(runNumber, isEBEle, R9Ele, etaSCEle, EtEle);
   return correction; 
 }
 
@@ -160,7 +158,6 @@ void EnergyScaleCorrection_class::ReadFromFile(TString filename)
 #ifdef PEDANTIC_OUTPUT
   std::cout << "[STATUS] Reading energy scale correction  values from file: " << filename << std::endl;
 #endif
-  std::cout << "[STATUS] Reading energy scale correction  values from file: " << filename << std::endl;
 
   //std::ifstream Ccufile(edm::FileInPath(Ccufilename).fullPath().c_str(),std::ios::in);
   std::ifstream f_in(edm::FileInPath(filename).fullPath().c_str());
@@ -173,19 +170,18 @@ void EnergyScaleCorrection_class::ReadFromFile(TString filename)
   
   int runMin, runMax;
   TString category, region2;
-  double deltaP, err_deltaP, err_deltaP_stat, err_deltaP_syst;
+  double deltaP, err_deltaP, err_deltaP_stat, err_deltaP_syst, err_deltaP_tot;
   
   
   for(f_in >> category; f_in.good(); f_in >> category) {
     f_in >> region2
 	 >> runMin >> runMax
-	 >> deltaP >> err_deltaP >> err_deltaP_stat >> err_deltaP_syst;
+	 >> deltaP >> err_deltaP >> err_deltaP_stat >> err_deltaP_syst >> err_deltaP_tot;
     
     AddScale(category, runMin, runMax, deltaP, err_deltaP_stat, err_deltaP_syst);
   }
   
   f_in.close();
-  
   return;
 }
 
@@ -469,7 +465,7 @@ correctionCategory_class::correctionCategory_class(TString category_)
       etamax = TString(category.substr(p1 + 1, p2 - p1 - 1)).Atof();
     }
   }
-  
+
   if(category.find("EBlowEta") != std::string::npos) {
     etamin = 0;
     etamax = 1;
@@ -499,9 +495,22 @@ correctionCategory_class::correctionCategory_class(TString category_)
     p1 = p2;
     p2 = category.find("-", p1);
     etmax = TString(category.substr(p1 + 1, p2 - p1 - 1)).Atof();
-    //  std::cout << etmin << "\t" << etmax << "\t" << category.substr(p1 + 1, p2 - p1 - 1) << std::endl;
+    // std::cout << "ET = " << etmin << "\t" << etmax << "\t" << category.substr(p1 + 1, p2 - p1 - 1) << std::endl;
   }
   
+  // R9 region
+  p1 = category.find("-R9_");
+  p2 = p1 + 1;
+  if(p1 != std::string::npos) {
+    p1 = category.find("_", p1);
+    p2 = category.find("_", p1 + 1);
+    r9min = TString(category.substr(p1 + 1, p2 - p1 - 1)).Atof();
+    p1 = p2;
+    p2 = category.find("-", p1);
+    r9max = TString(category.substr(p1 + 1, p2 - p1 - 1)).Atof();
+    // std::cout << "R9 = " << r9min << "\t" << r9max << "\t" << category.substr(p1 + 1, p2 - p1 - 1) << std::endl;
+  }
+
   if(category.find("gold")   != std::string::npos || 
      category.find("Gold")   != std::string::npos || 
      category.find("highR9") != std::string::npos) {
