@@ -37,15 +37,15 @@ fi;
 
 scriptName=${1:-./batchScript.sh}
 
+## x509userproxy = \$ENV(X509_USER_PROXY)
 cat > $jobdesc <<EOF
 Universe = vanilla
 Executable = ${prefix}${scriptName}
+getenv      = True
 use_x509userproxy = true
-x509userproxy = \$ENV(X509_USER_PROXY)
 Log        = ${prefix}condor_job_\$(ProcId).log
 Output     = ${prefix}condor_job_\$(ProcId).out
 Error      = ${prefix}condor_job_\$(ProcId).error
-getenv      = True
 environment = "LS_SUBCWD=${here}"
 request_memory = 2000
 EOF

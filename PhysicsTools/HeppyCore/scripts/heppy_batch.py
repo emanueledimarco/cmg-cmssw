@@ -179,6 +179,7 @@ echo
 echo '==== environment (after) ===='
 echo
 env | sort
+export X509_USER_PROXY={x509var}
 echo
 echo '==== running ===='
 python $CMSSW_BASE/src/PhysicsTools/HeppyCore/python/framework/looper.py pycfg.py config.pck --options=options.json
@@ -187,7 +188,7 @@ echo '==== sending the files back ===='
 echo
 rm Loop/cmsswPreProcessing.root 2> /dev/null
 {copy}
-""".format(copy=cpCmd, init=init)
+""".format(copy=cpCmd, init=init, x509var = os.environ['X509_USER_PROXY'])
 
    return script
 
