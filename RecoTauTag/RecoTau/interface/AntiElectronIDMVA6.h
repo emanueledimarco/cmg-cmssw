@@ -20,6 +20,12 @@
 #include "DataFormats/GsfTrackReco/interface/GsfTrack.h"
 #include "DataFormats/GsfTrackReco/interface/GsfTrackFwd.h"
 #include "CondFormats/EgammaObjects/interface/GBRForest.h"
+#include "DataFormats/PatCandidates/interface/Tau.h"
+#include "DataFormats/PatCandidates/interface/Electron.h"
+
+#include "FastSimulation/BaseParticlePropagator/interface/BaseParticlePropagator.h"
+#include "FastSimulation/Particle/interface/RawParticle.h"
+#include "DataFormats/PatCandidates/interface/PackedCandidate.h"
 
 #include "TMVA/Tools.h"
 #include "TMVA/Reader.h"
@@ -115,12 +121,20 @@ class AntiElectronIDMVA6
                    Float_t ElecMvaInDeltaEta
                   );
 
-   // CV: this function can be called for all categories
+   // this function can be called for all categories
    double MVAValue(const reco::PFTau& thePFTau, 
-		   const reco::GsfElectron& theGsfEle);
-   // CV: this function can be called for category 1 only !!
-   double MVAValue(const reco::PFTau& thePFTau);
-   
+		   const reco::GsfElectron& theGsfEle, bool usePhiAtEcalEntranceExtrapolation);
+   // this function can be called for category 1 only !!
+   double MVAValue(const reco::PFTau& thePFTau, bool usePhiAtEcalEntranceExtrapolation);
+
+   // this function can be called for all categories
+   double MVAValue(const pat::Tau& theTau, 
+		   const pat::Electron& theEle, bool usePhiAtEcalEntranceExtrapolation);
+   // this function can be called for category 1 only !!
+   double MVAValue(const pat::Tau& theTau, bool usePhiAtEcalEntranceExtrapolation);
+   // track extrapolation to ECAL entrance (used to re-calculate varibales that might not be available on miniAOD)
+   bool atECalEntrance(const reco::Candidate* part, math::XYZPoint &pos);    
+
  private:   
 
    double dCrackEta(double eta);
@@ -160,6 +174,7 @@ class AntiElectronIDMVA6
 
    std::vector<TFile*> inputFilesToDelete_;
 
+   double bField_;
    int verbosity_;
 };
 

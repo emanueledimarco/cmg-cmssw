@@ -14,7 +14,7 @@
 #include "FWCore/Framework/interface/Event.h"
 #include "FWCore/Framework/interface/MakerMacros.h"
 #include "FWCore/Framework/interface/Frameworkfwd.h"
-#include "FWCore/Framework/interface/EDProducer.h"
+#include "FWCore/Framework/interface/stream/EDProducer.h"
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 #include "FWCore/MessageLogger/interface/MessageLogger.h"
 #include "FWCore/Utilities/interface/Exception.h"
@@ -59,8 +59,8 @@ class PFTauTransverseImpactParameters : public edm::stream::EDProducer<> {
   enum Alg{useInputPV=0, useFont};
   enum CMSSWPerigee{aCurv=0,aTheta,aPhi,aTip,aLip};
   explicit PFTauTransverseImpactParameters(const edm::ParameterSet& iConfig);
-  ~PFTauTransverseImpactParameters();
-  virtual void produce(edm::Event&,const edm::EventSetup&);
+  ~PFTauTransverseImpactParameters() override;
+  void produce(edm::Event&,const edm::EventSetup&) override;
  private:
   edm::EDGetTokenT<std::vector<reco::PFTau> > PFTauToken_;
   edm::EDGetTokenT<edm::AssociationVector<PFTauRefProd, std::vector<reco::VertexRef> > > PFTauPVAToken_;
@@ -97,8 +97,8 @@ void PFTauTransverseImpactParameters::produce(edm::Event& iEvent,const edm::Even
   iEvent.getByToken(PFTauSVAToken_,PFTauSVA);
 
   // Set Association Map
-  auto_ptr<edm::AssociationVector<PFTauRefProd, std::vector<reco::PFTauTransverseImpactParameterRef> > > AVPFTauTIP(new edm::AssociationVector<PFTauRefProd, std::vector<reco::PFTauTransverseImpactParameterRef> >(PFTauRefProd(Tau)));
-  std::auto_ptr<PFTauTransverseImpactParameterCollection>  TIPCollection_out= std::auto_ptr<PFTauTransverseImpactParameterCollection>(new PFTauTransverseImpactParameterCollection());
+  auto AVPFTauTIP = std::make_unique< edm::AssociationVector<PFTauRefProd, std::vector<reco::PFTauTransverseImpactParameterRef>>>(PFTauRefProd(Tau));
+  auto TIPCollection_out = std::make_unique<PFTauTransverseImpactParameterCollection>();
   reco::PFTauTransverseImpactParameterRefProd TIPRefProd_out = iEvent.getRefBeforePut<reco::PFTauTransverseImpactParameterCollection>("PFTauTIP");
 
 
@@ -138,7 +138,7 @@ void PFTauTransverseImpactParameters::produce(edm::Event& iEvent,const edm::Even
 	  }
 	}
       }
-      if(SV.size()>0){
+      if(!SV.empty()){
 	reco::Vertex::CovarianceMatrix cov;
 	reco::Vertex::Point v(SV.at(0)->x()-PV->x(),SV.at(0)->y()-PV->y(),SV.at(0)->z()-PV->z());
 	for(int i=0;i<reco::Vertex::dimension;i++){
@@ -161,8 +161,8 @@ void PFTauTransverseImpactParameters::produce(edm::Event& iEvent,const edm::Even
       }
     }
   }
-  iEvent.put(TIPCollection_out,"PFTauTIP");
-  iEvent.put(AVPFTauTIP);
+  iEvent.put(std::move(TIPCollection_out),"PFTauTIP");
+  iEvent.put(std::move(AVPFTauTIP));
 }
 
 DEFINE_FWK_MODULE(PFTauTransverseImpactParameters);
