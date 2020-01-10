@@ -124,7 +124,7 @@ bool ElectronIdMVABased::filter(edm::Event& iEvent, const edm::EventSetup& iSetu
 
   constexpr double etaEBEE = 1.485;
   
-  std::auto_ptr<reco::GsfElectronCollection> mvaElectrons(new reco::GsfElectronCollection);
+  std::unique_ptr<reco::GsfElectronCollection> mvaElectrons(new reco::GsfElectronCollection);
   
   Handle<reco::VertexCollection>  vertexCollection;
   iEvent.getByToken(vertexToken, vertexCollection);
@@ -141,17 +141,17 @@ bool ElectronIdMVABased::filter(edm::Event& iEvent, const edm::EventSetup& iSetu
       mvaElectrons->push_back( *egIter );
       reco::GsfElectron::MvaOutput myMvaOutput;
       myMvaOutput.mva_Isolated = mvaVal;
-      mvaElectrons->back().setMvaOutput(myMvaOutput);
+      mvaElectrons->back().setMvaOutput(std::move(myMvaOutput));
     }
     else if (eleEta > etaEBEE && mvaVal > thresholdEndcap  && isoDr03 < thresholdIsoEndcap) {
       mvaElectrons->push_back( *egIter );
       reco::GsfElectron::MvaOutput myMvaOutput;
       myMvaOutput.mva_Isolated = mvaVal;
-      mvaElectrons->back().setMvaOutput(myMvaOutput);
+      mvaElectrons->back().setMvaOutput(std::move(myMvaOutput));
     }
   }
     
-  iEvent.put(mvaElectrons);
+  iEvent.put(std::move(mvaElectrons));
   
   return true;
 }
